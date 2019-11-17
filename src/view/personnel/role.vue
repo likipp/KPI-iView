@@ -74,15 +74,7 @@ export default {
             let member;
             for (member of row.members) {
               memberList.push(h('tbody', [
-                h('tr', {
-                  style: {
-                    textAlign: 'center',
-                    height: 'auto',
-                    border: '1px solid',
-                    padding: '20px',
-                    font: 'Trebuchet MS'
-                  }
-                }, [
+                h('tr', [
                   h('td', index + 1),
                   h('td', member.username),
                   h('td', member.name)
@@ -91,26 +83,22 @@ export default {
             }
             return h('Poptip', {
               props: {
+                title: '成员列表',
+                trigger: 'hover',
                 transfer: true,
                 placement: 'right',
-                width: '300'
+                width: '300',
+                wordWrap: true
               }
             }, [
               h('div', {
                 slot: 'content',
-                class: 'show'
-              }, [
-                h('table', {}, [
+                class: 'm-table'
+              },
+              [
+                h('table', { style: { borderCollapse: 'collapse' } }, [
                   h('thead', [
-                    h('tr', {
-                      style: {
-                        textAlign: 'center',
-                        height: 'auto',
-                        border: '1px solid',
-                        padding: '20px',
-                        font: 'Trebuchet MS'
-                      }
-                    }, [
+                    h('tr', {}, [
                       h('th', 'ID'),
                       h('th', '用户名'),
                       h('th', '姓名')
@@ -214,3 +202,24 @@ export default {
   }
 }
 </script>
+<style lang="less">
+  .m-table table {
+    table-layout: fixed;
+    font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+    width:100%;
+    border-collapse:collapse;
+    border:1px solid #e9e9e9;
+  }
+  .m-table td, .m-table th {
+    font-size:1em;
+    border:1px solid #e9e9e9;
+    padding:3px 7px 2px 7px;
+    text-align: center;
+  }
+  .m-table th {
+    font-size:1.1em;
+    padding-top:5px;
+    padding-bottom:4px;
+    background-color:#f7f7f7;
+  }
+</style>
