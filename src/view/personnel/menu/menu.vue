@@ -1,12 +1,39 @@
 <template>
   <div class='menu'>
     <Card>
-      <Row>
+      <Row style="padding-bottom: 12px">
         <Button @click='addMenu' type='primary' icon='md-add' style='margin-right: 6px'>添加子节点</Button>
         <Button @click='addRootMenu' type='primary' icon='md-add' style='margin-right: 6px'>添加顶部菜单</Button>
         <Button @click='delAll' type='error' icon='md-trash'>批量删除</Button>
       </Row>
-      <tree-table :data="this.tableData" :columns="columns" :expand-type="props.expandType"></tree-table>
+      <tree-table :data="this.tableData" :columns="columns"
+        :border="props.border"
+        :stripe="props.stripe"
+        :show-header="props.showHeader"
+        :show-row-hover="props.showRowHover"
+        :show-index="props.showIndex"
+        :is-fold="props.isFold"
+        :treeType="props.treeType"
+        :expand-type="props.expandType"
+        :selection-type="props.selectionType">
+      >
+        <template slot-scope="{ row }" slot="icon">
+          <Icon :type="row.icon" size="20"></Icon>
+        </template>
+        <template slot-scope="{ row }" slot="is_show">
+          <Badge status="success" text="显示" v-if="row.is_show"></Badge>
+          <Badge status="error" text="隐藏" v-else></Badge>
+        </template>
+        <template slot-scope="{ row }" slot="is_frame">
+          <Badge status="success" text="是" v-if="row.is_frame"></Badge>
+          <Badge status="error" text="否" v-else></Badge>
+        </template>
+        <template slot="action" slot-scope="scope">
+          <Button size="small" type="primary" @click="click(scope.row)" icon="ios-create-outline">添加子节点</Button>
+          <Button size="small" type="info" @click="click(scope.row)" icon="md-list-box" style="margin-left: 5px">编辑</Button>
+          <Button size="small" type="error" @click="click(scope.row)" icon="md-trash" style="margin-left: 5px">删除</Button>
+        </template>
+      </tree-table>
 <!--      <tree-table :data='data' :expand-all='true' :columns='columns' border></tree-table>-->
     </Card>
   </div>
@@ -21,69 +48,76 @@ export default {
   data () {
     return {
       props: {
-        // stripe: false,
-        // border: false,
-        // showHeader: true,
+        stripe: true,
+        border: true,
+        showHeader: true,
         // showSummary: false,
-        // showRowHover: true,
-        // showIndex: false,
-        // treeType: true,
-        // isFold: true,
-        expandType: false
-        // selectionType: false,
+        showRowHover: true,
+        showIndex: false,
+        treeType: true,
+        isFold: true,
+        expandType: false,
+        selectionType: true
       },
       tableData: [],
-      //
-      // tableData: [
-      //   {
-      //     title: '部门管理',
-      //     icon: 'ios-analytics',
-      //     order: 100,
-      //     path: '/main',
-      //     component: '/component/main',
-      //     show: true
-      //   }
-      // ],
       columns: [
         {
           title: '名称',
+          slot: 'name',
           key: 'name',
           minWidth: '200px',
-          // render: (h, { row }) => {
-          //   return h('Span', {}, row.label)
-          // }
-          render: (h, { row }) => {
-            return h('Span', {}, row.name + '1')
-          }
+          align: 'center',
+          headerAlign: 'center'
         },
         {
           title: '图标',
-          key: 'icon',
+          type: 'template',
+          template: 'icon',
           minWidth: '200px',
-          render: (h, { row }) => {
-            console.log(row, 234234)
-            return h('span', { props: { icon: row.icon } }, '测试')
-          }
+          align: 'center',
+          headerAlign: 'center'
         },
         {
           title: '排序',
-          key: 'sort'
+          key: 'sort',
+          align: 'center',
+          headerAlign: 'center'
         },
         {
           title: '链接地址',
           key: 'path',
-          minWidth: '200px'
+          minWidth: '200px',
+          align: 'center',
+          headerAlign: 'center'
         },
         {
           title: '组件路径',
-          key: 'component'
+          key: 'component',
+          align: 'center',
+          headerAlign: 'center'
         },
         {
           title: '是否显示',
-          key: 'is_show',
-          render: (h, { row }) => {
-            return h('span', '是')
-          }
+          type: 'template',
+          template: 'is_show',
+          align: 'center',
+          headerAlign: 'center'
+        },
+        {
+          title: '是否外部链接',
+          type: 'template',
+          template: 'is_frame',
+          align: 'center',
+          headerAlign: 'center'
+        },
+        {
+          title: '操作',
+          fixed: 'right',
+          align: 'center',
+          headerAlign: 'center',
+          type: 'template',
+          template: 'action',
+          width: '450px'
         }
       ]
     }

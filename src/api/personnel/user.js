@@ -1,6 +1,6 @@
 import axios from 'axios/index'
 
-const userList = '/api/users/list'
+const userList = '/api/users/list';
 
 export function getUserList (params) {
   return axios({
@@ -10,7 +10,7 @@ export function getUserList (params) {
   })
 }
 
-const user = '/api/users/'
+const user = '/api/users/';
 export function createUser (params) {
   return axios.post(user, params)
 }

@@ -4,7 +4,6 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import store from './store'
-// import iView from 'iview'
 import ViewUI, { Message } from 'view-design'
 import 'view-design/dist/styles/iview.css'
 import i18n from '@/locale'
@@ -15,6 +14,8 @@ import installPlugin from '@/plugin'
 import './index.less'
 import '@/assets/icons/iconfont.css'
 import '@/assets/iconfont/iconfont.css'
+import 'vue-awesome/icons'
+import Icon from 'vue-awesome/components/Icon'
 import axios from 'axios'
 import { getToken } from '@/libs/util'
 import { backendMenusToRouters } from './libs/util'
@@ -35,6 +36,7 @@ import hasPermission from '../src/libs/hasPermission'
 Vue.use(ViewUI, {
   i18n: (key, value) => i18n.t(key, value)
 });
+Vue.component('v-icon',  Icon);
 Vue.use(hasPermission);
 Vue.use(hasRole);
 // Vue.use(TreeTable)
