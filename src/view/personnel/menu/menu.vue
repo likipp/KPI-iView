@@ -86,7 +86,7 @@ export default {
         {
           title: '链接地址',
           key: 'path',
-          minWidth: '200px',
+          width: '100px',
           align: 'center',
           headerAlign: 'center'
         },
@@ -94,7 +94,9 @@ export default {
           title: '组件路径',
           key: 'component',
           align: 'center',
-          headerAlign: 'center'
+          headerAlign: 'center',
+          minWidth: '200px',
+          width: '300px'
         },
         {
           title: '是否显示',
@@ -108,7 +110,8 @@ export default {
           type: 'template',
           template: 'is_frame',
           align: 'center',
-          headerAlign: 'center'
+          headerAlign: 'center',
+          width: '100px'
         },
         {
           title: '操作',

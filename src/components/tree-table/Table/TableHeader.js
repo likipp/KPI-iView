@@ -5,30 +5,30 @@ import { mixins } from './utils';
 export default {
   name: 'TreeTable__header',
   mixins: [mixins],
-  data() {
+  data () {
     return {
 
     };
   },
   computed: {
-    table() {
+    table () {
       return this.$parent;
-    },
+    }
   },
   methods: {
-    toggleAllChecked(checked) {
+    toggleAllChecked (checked) {
       this.table.bodyData = this.table.bodyData.map(row => ({
         ...row,
-        _isChecked: checked,
+        _isChecked: checked
       }));
-    },
+    }
   },
-  render() {
+  render () {
     // className
-    function getClassName(type, { headerAlign, key }) {
+    function getClassName (type, { headerAlign, key }) {
       const certainType = this.validateType(type, ['cell', 'inner'], 'getClassName');
       const classList = [];
-      if(key=="_normalIndex"){
+      if (key === '_normalIndex') {
         classList.push(`${this.prefixCls}--center-cell`);
       }
       if (certainType.cell) {
@@ -50,7 +50,7 @@ export default {
     }
 
     // 根据type渲染单元格Label
-    function renderLabel(column, columnIndex) {
+    function renderLabel (column, columnIndex) {
       if (this.isSelectionCell(this.table, columnIndex) && this.selectType === 'checkbox') {
         const allCheck = this.table.bodyData.every(row => row._isChecked);
         const indeterminate = !allCheck && this.table.bodyData.some(row => row._isChecked);
@@ -58,7 +58,7 @@ export default {
           indeterminate={ indeterminate }
           value={ allCheck }
           onOn-change={ checked => this.toggleAllChecked(checked) }
-          ></Checkbox>;
+        ></Checkbox>;
       }
       return column.title ? column.title : '';
     }
@@ -74,15 +74,15 @@ export default {
         <thead>
           <tr class={ `${this.prefixCls}__header-row` }>
             { this.table.tableColumns.map((column, columnIndex) =>
-                <th class={ getClassName.call(this, 'cell', column) }>
-                  <div class={ getClassName.call(this, 'inner', column) }>
-                    { renderLabel.call(this, column, columnIndex) }
-                  </div>
-                </th>)
+              <th class={ getClassName.call(this, 'cell', column) }>
+                <div class={ getClassName.call(this, 'inner', column) }>
+                  { renderLabel.call(this, column, columnIndex) }
+                </div>
+              </th>)
             }
           </tr>
         </thead>
       </table>
     );
-  },
+  }
 };

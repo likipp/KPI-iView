@@ -5,7 +5,7 @@
 <div class="search">
   <Card>
     <Row class="operation">
-      <Button @click="addRole" type="primary" icon="md-add">添加角色</Button>
+      <Button @click="roleModal = true" type="primary" icon="md-add">添加角色</Button>
       <Button @click="delAll" type="error" icon="md-trash">批量删除</Button>
       <Button @click="init" icon="md-refresh">刷新</Button>
     </Row>
@@ -17,21 +17,71 @@
       </Alert>
     </Row>
     <Row>
-      <Table :data="roleData" :columns="columns" border stripe></Table>
+      <Table :data="roleData" :columns="columns" :loading="loading" border stripe ref="table"
+        @on-selection-change="changeSelect"
+      ></Table>
+    </Row>
+    <Row type="flex" justify="end" class="page">
+      <Page :page-size="getParams.page_size" :total="total" size="small" show-total show-sizer show-elevator
+            :page-size-opts="[2,10,20,50]" :current="getParams.page"
+            @on-change="changePage" @on-page-size-change="changePageSize"
+      ></Page>
     </Row>
   </Card>
+  <Modal v-model="roleModal" :title="type === 'create' ? '增加角色' : '编辑角色'" draggable
+         scrollable width="500" @on-cancel="cancel">
+    <Form ref="roleForm" :model="roleForm" :rules="roleRule" :label-width="80" label-colon>
+      <FormItem label="名称" prop="name">
+        <Input v-model="roleForm.name"></Input>
+      </FormItem>
+      <FormItem label="描述" prop="desc">
+        <Input v-model="roleForm.desc" type="textarea"></Input>
+      </FormItem>
+    </Form>
+    <div slot="footer">
+      <Button @click="cancel">取消</Button>
+      <Button type="primary" v-if="type === 'create'"
+              @click="handleCreateRole" :disabled="submitDisabled">确定</Button>
+      <Button type="primary" v-else @click="handleUpdateRole" :disabled="submitDisabled">编辑</Button>
+    </div>
+  </Modal>
+  <Modal v-model="menuModal" :title="'编辑菜单权限'" draggable
+         scrollable width="500" @on-cancel="menuCancel">
+    <Tree :data="menuList" show-checkbox :render="renderContent"></Tree>
+    <div slot="footer">
+      <Button @click="menuCancel">取消</Button>
+      <Button type="primary" @click="handleUpdateMenu">提交</Button>
+    </div>
+  </Modal>
 </div>
 </template>
 
 <script>
-import { getRoleList } from '@/api/personnel/role';
+import { getRoleList, createRole, updateRole, deleteRole } from '@/api/personnel/role';
+import { getMenuList } from '@/api/personnel/menu';
+import { Poptip, Button } from 'view-design';
 
 export default {
   name: 'role',
   data () {
     return {
+      loading: false,
+      roleModal: false,
+      menuModal: false,
+      type: 'create',
+      editIndex: -1,
+      total: 0,
+      getParams: {
+        page: 1,
+        page_size: 2,
+        search: ''
+      },
       selectCount: 0,
       roleData: [],
+      roleForm: {
+        name: '',
+        desc: ''
+      },
       columns: [
         {
           type: 'selection',
@@ -42,7 +92,10 @@ export default {
           title: '序号',
           type: 'index',
           width: 80,
-          align: 'center'
+          align: 'center',
+          indexMethod: (row) => {
+            return (row._index + 1) + (this.getParams.page * this.getParams.page_size) - this.getParams.page_size
+          }
         },
         {
           title: '角色名称',
@@ -75,7 +128,7 @@ export default {
             for (member of row.members) {
               memberList.push(h('tbody', [
                 h('tr', [
-                  h('td', index + 1),
+                  h('td', member.id),
                   h('td', member.username),
                   h('td', member.name)
                 ])
@@ -135,13 +188,16 @@ export default {
                 {
                   props: {
                     type: 'warning',
-                    size: 'small'
+                    size: 'small',
+                    icon: 'md-grid'
                   },
                   style: {
                     marginRight: '5px'
                   },
                   on: {
                     click: () => {
+                      this.menuModal = true
+                      console.log(params)
                       console.log('测试')
                     }
                   }
@@ -152,53 +208,213 @@ export default {
                 {
                   props: {
                     type: 'primary',
-                    size: 'small'
+                    size: 'small',
+                    icon: 'ios-create-outline'
                   },
                   style: {
                     marginRight: '5px'
                   },
                   on: {
                     click: () => {
-                      console.log('编辑')
+                      this.type = 'edit';
+                      this.roleModal = true;
+                      this.roleForm.id = params.row.id;
+                      this.roleForm.name = params.row.name;
+                      this.roleForm.desc = params.row.desc;
                     }
                   }
                 }, '编辑'
               ),
-              h(
-                'Button',
-                {
-                  props: {
-                    size: 'small',
-                    type: 'error'
+              h(Poptip, {
+                props: {
+                  confirm: true,
+                  transfer: true,
+                  placement: 'left-start',
+                  title: `确定要删除${params.row.name}吗?`,
+                  type: 'error',
+                  size: 'small',
+                  width: '300',
+                  vModel: true
+                },
+                on: {
+                  'on-ok': () => {
+                    this.handleDeleteRole(params.row)
                   },
-                  on: {
-                    click: () => {
-                      console.log('删除')
-                    }
+                  'on-cancel': () => {
+                    this.$Message.info({ background: true, content: '点击了取消', duration: 3 })
                   }
-                }, '删除'
-              )
+                }
+              }, [
+                h(Button, {
+                  props: {
+                    type: 'error',
+                    size: 'small',
+                    icon: 'ios-trash-outline'
+                  }
+                }, '删除')
+              ])
             ])
           }
         }
-      ]
+      ],
+      roleRule: {
+        name: [{ required: true, message: '名称不能为空', trigger: 'blur' }]
+      },
+      menuList: [],
+      renderContent: (h, { data }) => {
+        if (data.pid === null) {
+          return h('Span', {
+            style: {
+              width: '100%'
+            }
+          }, [
+            h('Span', [
+              h('Icon', {
+                props: {
+                  type: ' iconfont icon-bumen3',
+                  size: '17'
+                },
+                style: {
+                  marginRight: '8px',
+                  color: '#2d8cf0'
+                }
+              }),
+              h('span', data.name)
+            ])
+          ])
+        } else {
+          return h('Span', {
+            style: {
+              width: '100%'
+            }
+          }, [
+            h('Span', [
+              h('Icon', {
+                props: {
+                  type: 'md-filing',
+                  size: '17'
+                },
+                style: {
+                  marginRight: '8px',
+                  color: '#19be6b'
+                }
+              }),
+              h('Span', data.name)
+            ])
+          ])
+        }
+      }
     }
   },
   methods: {
-    handelGetRoleList () {
-      getRoleList().then(
+    handleGetRoleList () {
+      if (this.curPage >= this.getParams.page) {
+        if (this.loading) return;
+        this.loading = true;
+        getRoleList(this.getParams).then(
+          res => {
+            this.roleData = res.data.results;
+            this.total = res.data.count;
+            this.loading = false;
+          }
+        )
+      } else {
+        if (this.loading) return;
+        this.loading = true;
+        this.getParams.page = 1;
+        getRoleList(this.getParams).then(
+          res => {
+            this.roleData = res.data.results;
+            this.total = res.data.count;
+            this.loading = false;
+          }
+        )
+      }
+    },
+    init () {
+      this.handleGetRoleList()
+    },
+    delAll () {},
+    clearSelectAll () {
+      this.$refs.table.selectAll(false)
+    },
+    changePageSize (size) {
+      this.getParams.page_size = size;
+      this.$nextTick(() => {
+        this.handleGetRoleList()
+      })
+    },
+    changePage (val) {
+      this.getParams.page = val;
+      this.handleGetRoleList();
+      this.clearSelectAll()
+    },
+    changeSelect (val) {
+      this.selectCount = val.length
+    },
+    cancel () {
+      this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 });
+      this.roleModal = false;
+      this.$refs['roleForm'].resetFields();
+      this.handleGetRoleList()
+    },
+    handleCreateRole () {
+      createRole(this.roleForm).then(
         res => {
-          this.roleData = res.data
+          this.$Message.success({ background: true, content: `新增${this.roleForm.name}成功`, closable: true, duration: 5 });
+          this.roleModal = false;
+          this.$refs['roleForm'].resetFields();
+          this.handleGetRoleList()
         }
       )
     },
-    addRole () {},
-    init () {},
-    delAll () {},
-    clearSelectAll () {}
+    handleUpdateRole () {
+      const { id, ...params } = this.roleForm;
+      updateRole(id, params).then(
+        res => {
+          this.$Message.success({ background: true, content: `修改${this.roleForm.name}成功`, closable: true, duration: 5 });
+          this.roleModal = false;
+          this.$refs['roleForm'].resetFields();
+          this.handleGetRoleList()
+        }
+      )
+    },
+    handleDeleteRole (value) {
+      const { id, ...params } = value;
+      deleteRole(id).then(
+        res => {
+          this.$Message.success({ background: true, content: `删除${params.name}成功`, closable: true, duration: 5 });
+          this.total = this.total - 1;
+          this.handleGetRoleList()
+        }
+      )
+    },
+    handleGetMenuList () {
+      getMenuList().then(
+        res => {
+          this.menuList = res.data.results
+        }
+      )
+    },
+    handleUpdateMenu () {},
+    menuCancel () {
+      this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 });
+      this.menuModal = false
+    }
   },
   created () {
-    this.handelGetRoleList()
+    this.handleGetRoleList();
+    this.handleGetMenuList()
+  },
+  computed: {
+    curPage: function () {
+      return Math.ceil(this.total / this.getParams.page_size)
+    },
+    submitDisabled () {
+      let disabled = false;
+      if (this.roleForm.name === '') disabled = true
+      return disabled
+    }
   }
 }
 </script>

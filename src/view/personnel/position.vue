@@ -1,6 +1,5 @@
 <template>
   <div>
-<!--    <PositionTable :list=this.positionList></PositionTable>-->
     <Card>
       <div style="padding-bottom: 10px">
         <Button style="margin-right:8px;" type="error">
@@ -126,44 +125,44 @@ export default {
     handleGetPositionList () {
       getPositionList().then(
         res => {
-          this.positionList = res.data
+          this.positionList = res.data.results
         }
       )
     },
     handelCreatePos () {
       createPosition(this.posForm).then(
         res => {
-          this.modal = false
-          this.$refs['posForm'].resetFields()
-          this.handleGetPositionList()
+          this.modal = false;
+          this.$refs['posForm'].resetFields();
+          this.handleGetPositionList();
           this.$Message.success({ background: true, content: `新增${this.posForm.name}成功!`, closable: true, duration: 5 })
         }
       )
     },
     handelUpdatePos () {
-      const { id, ...data } = this.posForm
+      const { id, ...data } = this.posForm;
       updatePosition(id, data).then(
         res => {
-          this.modal = false
-          this.$refs['posForm'].resetFields()
-          this.handleGetPositionList()
+          this.modal = false;
+          this.$refs['posForm'].resetFields();
+          this.handleGetPositionList();
           this.$Message.success({ background: true, content: `修改${data.name}成功!`, closable: true, duration: 5 })
         }
       )
     },
     handelDeletePos (value) {
-      const { id, ...data } = value
+      const { id, ...data } = value;
       deletePosition(id).then(
         res => {
-          this.loading = false
-          this.$Message.success({ background: true, content: `删除部门${data.name}成功`, closable: true, duration: 5 })
+          this.loading = false;
+          this.$Message.success({ background: true, content: `删除部门${data.name}成功`, closable: true, duration: 5 });
           this.handleGetPositionList()
         }
       )
     },
     cancel () {
-      this.modal = false
-      this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 })
+      this.modal = false;
+      this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 });
       this.$refs['posForm'].resetFields()
     }
   },

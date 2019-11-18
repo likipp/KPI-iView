@@ -1,3 +1,6 @@
+<style lang="less">
+  @import '../../styles/table-common';
+</style>
 <template>
   <div>
     <Layout :style="{minHeight: '100vh'}">
@@ -8,25 +11,33 @@
       </Sider>
       <Content :style="{padding: '24px', minHeight: '280px', background: '#fff'}">
         <Card>
-          <div style="padding-bottom: 10px">
-            <Button style="margin-right:8px;" type="error" @click="handelDeleteSelectUser">
-              <Icon type="ios-trash-outline" size="15" style="margin-bottom: 3px"></Icon>删除</Button>
-            <Input placeholder="搜索" style="width: auto; margin-left: 5px;" v-model="getParams.search"
-                   @on-click="handleGetUserList" @on-enter="handleGetUserList" clearable @on-clear="handleGetUserList">
-            </Input>
-            <Button style="float:right" type="primary" @click="createButton">
-              <Icon type=" iconfont icon-jurassic_add-user" size="15" ></Icon>新增用户</Button>
+          <div class="search">
+            <Row class="operation">
+              <Button style="margin-right:8px;" type="error" @click="handelDeleteSelectUser">
+                <Icon type="ios-trash-outline" size="15" style="margin-bottom: 3px"></Icon>批量删除</Button>
+              <Input placeholder="搜索" style="width: auto; margin-left: 5px;" v-model="getParams.search"
+                     @on-click="handleGetUserList" @on-enter="handleGetUserList" clearable @on-clear="handleGetUserList">
+              </Input>
+              <Button style="float:right" type="primary" @click="createButton">
+                <Icon type=" iconfont icon-jurassic_add-user" size="15" ></Icon>新增用户</Button>
+            </Row>
+            <Row>
+              <UserTable
+                :list="this.userList"
+                :total=this.total
+                :loading="this.loading"
+                :pageParams = this.getParams
+                @userList="handleGetUserList"
+                @callBack="updateInfo"
+                @getSelectUser="getSelectUser"
+              ></UserTable>
+            </Row>
+            <Row type="flex" justify="end" class="page">
+              <Page show-sizer show-elevator show-total size="small" :total="total"
+                    :page-size="getParams.page_size" :current="getParams.page" :page-size-opts="[2,10,20,50]"
+                    @on-page-size-change="changePageSize" @on-change="changePage"></Page>
+            </Row>
           </div>
-          <UserTable
-            :list="this.userList"
-            :total=this.total
-            :loading="this.loading"
-            :pageParams = this.getParams
-            @userList="handleGetUserList"
-            @callBack="updateInfo"
-            @getSelectUser="getSelectUser"
-          ></UserTable>
-          <UserPage :total="this.total"></UserPage>
         </Card>
       </Content>
     </Layout>
@@ -37,20 +48,22 @@
 <script>
 import { getUserList, deleteUser } from '../../api/personnel/user'
 import { getOrganizationTree } from '../../api/personnel/organizationtree'
-import { UserTable, UserTree, UserPage, UserModal } from '_c/user/'
+import { UserTable, UserTree, UserModal } from '_c/user/'
 
 export default {
   name: 'user',
-  components: { UserTable, UserTree, UserPage, UserModal },
+  components: { UserTable, UserTree, UserModal },
   data () {
     return {
       userModal: false,
       isCollapsed: false,
       loading: false,
-      total: 1,
+      editIndex: -1,
+      total: 0,
+      selectCount: 0,
       getParams: {
         page: 1,
-        page_size: 10,
+        page_size: 2,
         department: '',
         search: ''
       },
@@ -63,23 +76,23 @@ export default {
   methods: {
     handleGetUserList () {
       if (this.curPage >= this.getParams.page) {
-        if (this.loading) return
-        this.loading = true
+        if (this.loading) return;
+        this.loading = true;
         getUserList(this.getParams).then(
           res => {
-            this.userList = res.data
-            this.total = res.data.length
+            this.userList = res.data.results;
+            this.total = res.data.count;
             this.loading = false
           }
         )
       } else {
-        if (this.loading) return
-        this.loading = true
-        this.getParams.page = 1
+        if (this.loading) return;
+        this.loading = true;
+        this.getParams.page = 1;
         getUserList(this.getParams).then(
           res => {
-            this.userList = res.data
-            this.total = res.data.length
+            this.userList = res.data.results;
+            this.total = res.data.count;
             this.loading = false
           }
         )
@@ -93,12 +106,13 @@ export default {
       )
     },
     createButton () {
-      this.$store.commit('setType', 'create')
+      this.$store.commit('setType', 'create');
       this.$store.commit('setModal', true)
     },
     getSelect (data) {
       if (data.length > 0) {
-        for (let result of data) {
+        let result;
+        for (result of data) {
           if (data.indexOf(result) === 0) {
             this.getParams.department = result.title
           } else {
@@ -107,7 +121,7 @@ export default {
         }
         this.handleGetUserList()
       } else {
-        this.getParams.department = ''
+        this.getParams.department = '';
         this.handleGetUserList()
       }
     },
@@ -126,7 +140,8 @@ export default {
           }
         )
       } else if (this.selectUser.length > 1) {
-        for (let user of this.selectUser) {
+        let user;
+        for (user of this.selectUser) {
           deleteUser(user.id).then(
             res => {
             }
@@ -136,10 +151,21 @@ export default {
       } else {
         this.$Message.error({ background: true, content: '未选中任何用户!', closable: true, duration: 5 })
       }
+    },
+    changePageSize (size) {
+      this.getParams.page_size = size;
+      this.$nextTick(() => {
+        this.handleGetUserList()
+      })
+    },
+    changePage (val) {
+      this.getParams.page = val;
+      this.handleGetUserList()
     }
+
   },
   created () {
-    this.handleGetUserList()
+    this.handleGetUserList();
     this.handleGetOrganizationTree()
   },
   computed: {
@@ -149,6 +175,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-</style>
