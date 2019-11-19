@@ -170,7 +170,8 @@ export default {
       )
     },
     selectChange (selection) {
-      for (const data of selection) {
+      let data;
+      for (data of selection) {
         this.ids.push({ 'id': data.id, 'name': data.name })
       }
       this.$emit('getSelectUser', this.ids)

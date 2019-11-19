@@ -45,9 +45,11 @@
       <Button type="primary" v-else @click="handleUpdateRole" :disabled="submitDisabled">编辑</Button>
     </div>
   </Modal>
-  <Modal v-model="menuModal" :title="'编辑菜单权限'" draggable
-         scrollable width="500" @on-cancel="menuCancel">
-    <Tree :data="menuList" show-checkbox :render="renderContent"></Tree>
+  <Modal v-model="menuModal" :title="menuTitle" :mask-closable="false" draggable
+         scrollable width="500" @on-cancel="menuCancel" class="permModal">
+    <div style="position: relative">
+      <Tree :data="menuList" show-checkbox :render="renderContent" multiple></Tree>
+    </div>
     <div slot="footer">
       <Button @click="menuCancel">取消</Button>
       <Button type="primary" @click="handleUpdateMenu">提交</Button>
@@ -65,6 +67,7 @@ export default {
   name: 'role',
   data () {
     return {
+      menuTitle: '',
       loading: false,
       roleModal: false,
       menuModal: false,
@@ -172,8 +175,48 @@ export default {
           title: '描述',
           key: 'desc',
           minWidth: 150,
+          width: 250,
           align: 'center',
           sortable: true
+        },
+        {
+          title: '权限',
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h(
+                'Button',
+                {
+                  props: {
+                    type: 'success',
+                    size: 'small',
+                    icon: 'md-grid'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.editPerm(params.row)
+                    }
+                  }
+                }, '菜单权限'
+              ),
+              h(
+                'Button',
+                {
+                  props: {
+                    type: 'success',
+                    size: 'small',
+                    icon: 'md-lock'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  }
+                }, '按钮权限'
+              )
+            ])
+          }
         },
         {
           title: '操作',
@@ -183,26 +226,6 @@ export default {
           width: 300,
           render: (h, params) => {
             return h('div', [
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'warning',
-                    size: 'small',
-                    icon: 'md-grid'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: () => {
-                      this.menuModal = true
-                      console.log(params)
-                      console.log('测试')
-                    }
-                  }
-                }, '菜单权限'
-              ),
               h(
                 'Button',
                 {
@@ -262,47 +285,41 @@ export default {
       },
       menuList: [],
       renderContent: (h, { data }) => {
+        let icon = '';
+        let color = '';
         if (data.pid === null) {
-          return h('Span', {
-            style: {
-              width: '100%'
-            }
-          }, [
-            h('Span', [
-              h('Icon', {
-                props: {
-                  type: ' iconfont icon-bumen3',
-                  size: '17'
-                },
-                style: {
-                  marginRight: '8px',
-                  color: '#2d8cf0'
-                }
-              }),
-              h('span', data.name)
-            ])
-          ])
+          icon = ' iconfont icon-bumen3';
+          color = '#2d8cf0'
         } else {
-          return h('Span', {
-            style: {
-              width: '100%'
-            }
-          }, [
-            h('Span', [
-              h('Icon', {
-                props: {
-                  type: 'md-filing',
-                  size: '17'
-                },
-                style: {
-                  marginRight: '8px',
-                  color: '#19be6b'
-                }
-              }),
-              h('Span', data.name)
-            ])
-          ])
+          icon = 'md-filing';
+          color = '#19be6b'
         }
+        return h('Span', {
+          style: {
+            width: '100%',
+            display: 'inline-block',
+            cursor: 'pointer'
+          }
+          // on: {
+          //   click: () => {
+          //     data.checked = !data.checked
+          //   }
+          // }
+        }, [
+          h('Span', [
+            h('Icon', {
+              props: {
+                type: icon,
+                size: '17'
+              },
+              style: {
+                marginRight: '8px',
+                color: color
+              }
+            }),
+            h('Span', data.name)
+          ])
+        ])
       }
     }
   },
@@ -333,6 +350,7 @@ export default {
     },
     init () {
       this.handleGetRoleList()
+      this.handleGetMenuList()
     },
     delAll () {},
     clearSelectAll () {
@@ -390,6 +408,7 @@ export default {
       )
     },
     handleGetMenuList () {
+      this.menuList = [];
       getMenuList().then(
         res => {
           this.menuList = res.data.results
@@ -400,6 +419,44 @@ export default {
     menuCancel () {
       this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 });
       this.menuModal = false
+    },
+    editPerm (value) {
+      let roleMenus = value.menus;
+      this.checkMenuTree(this.menuList, roleMenus);
+      this.menuModal = true;
+      this.menuTitle = `菜单分配--${value.name}`;
+    },
+    checkMenuTree (permData, roleMenus) {
+      let that = this;
+      permData.forEach(function (p) {
+        // console.log(!!that.hasPerm(p, roleMenus), p)
+        // p.checked = !!that.hasPerm(p, roleMenus);
+        // if (p.children) {
+        //   that.checkMenuTree(p.children, roleMenus)
+        // }
+        if (that.hasPerm(p, roleMenus)) {
+          if (p.pid === null) {
+            p.selected = true
+          } else {
+            p.checked = true;
+          }
+        } else {
+          p.checked = false;
+        }
+        if (p.children) {
+          that.checkMenuTree(p.children, roleMenus)
+        }
+      })
+    },
+    hasPerm (p, roleMenus) {
+      let flag = false;
+      for (let i = 0; i < roleMenus.length; i++) {
+        if (p.id === roleMenus[i]) {
+          flag = true;
+          break;
+        }
+      }
+      return flag;
     }
   },
   created () {
@@ -412,9 +469,12 @@ export default {
     },
     submitDisabled () {
       let disabled = false;
-      if (this.roleForm.name === '') disabled = true
+      if (this.roleForm.name === '') disabled = true;
       return disabled
     }
+  },
+  mounted () {
+    this.init()
   }
 }
 </script>
@@ -437,5 +497,14 @@ export default {
     padding-top:5px;
     padding-bottom:4px;
     background-color:#f7f7f7;
+  }
+  .permModal {
+    .ivu-modal-body {
+      max-height: 600px;
+      /*overflow: auto;*/
+      font-size: 10px;
+      line-height: 1.5;
+      padding: 16px;
+    }
   }
 </style>
