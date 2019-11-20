@@ -29,13 +29,20 @@
           <Badge status="error" text="否" v-else></Badge>
         </template>
         <template slot="action" slot-scope="scope">
-          <Button size="small" type="primary" @click="click(scope.row)" icon="ios-create-outline">添加子节点</Button>
-          <Button size="small" type="info" @click="click(scope.row)" icon="md-list-box" style="margin-left: 5px">编辑</Button>
-          <Button size="small" type="error" @click="click(scope.row)" icon="md-trash" style="margin-left: 5px">删除</Button>
+          <Button size="small" type="primary" @click="handleCreateSub(scope.row)" icon="ios-create-outline">添加子节点</Button>
+          <Button size="small" type="info" @click="(scope.row)" icon="md-list-box" style="margin-left: 5px">编辑</Button>
+          <Button size="small" type="error" @click="(scope.row)" icon="md-trash" style="margin-left: 5px">删除</Button>
         </template>
       </tree-table>
 <!--      <tree-table :data='data' :expand-all='true' :columns='columns' border></tree-table>-->
     </Card>
+    <Modal draggable :mask-closable="false" :width="500" v-model="menuModal" :title="modalTitle">
+      <Form ref="menuAdd" :model="menuAdd" :label-width="100">
+        <div v-if="showParent">
+          <FormItem label="上级节点:">{{ parentTitle }}</FormItem>
+        </div>
+      </Form>
+    </Modal>
   </div>
 </template>
 <script>
@@ -51,7 +58,6 @@ export default {
         stripe: true,
         border: true,
         showHeader: true,
-        // showSummary: false,
         showRowHover: true,
         showIndex: false,
         treeType: true,
@@ -60,6 +66,10 @@ export default {
         selectionType: true
       },
       tableData: [],
+      modalTitle: '',
+      menuModal: false,
+      showParent: false,
+      parentTitle: '',
       columns: [
         {
           title: '名称',
@@ -122,7 +132,8 @@ export default {
           template: 'action',
           width: '450px'
         }
-      ]
+      ],
+      menuAdd: {}
     }
   },
   methods: {
@@ -137,6 +148,10 @@ export default {
           // console.log(this.tableData, 6666)
         }
       )
+    },
+    handleCreateSub (row) {
+      console.log(row, 6666)
+      this.menuModal = true
     }
   },
   created () {

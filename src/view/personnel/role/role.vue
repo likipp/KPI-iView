@@ -346,7 +346,9 @@ export default {
       this.handleGetRoleList();
       this.handleGetMenuList()
     },
-    delAll () {},
+    delAll () {
+      this.$Message.info({ background: true, content: '暂时没写', duration: 3 })
+    },
     clearSelectAll () {
       this.$refs.table.selectAll(false)
     },
