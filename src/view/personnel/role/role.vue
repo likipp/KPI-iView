@@ -1,5 +1,6 @@
 <style lang="less">
-  @import "../../../src/styles/table-common.less";
+  @import "../../../../src/styles/table-common.less";
+  @import './role.less';
 </style>
 <template>
 <div class="search">
@@ -48,7 +49,9 @@
   <Modal v-model="menuModal" :title="menuTitle" :mask-closable="false" draggable
          scrollable width="500" @on-cancel="menuCancel" class="permModal">
     <div style="position: relative">
-      <Tree :data="menuList" show-checkbox :render="renderContent" multiple></Tree>
+      <Tree ref="tree" :data="menuList" show-checkbox :render="renderContent" :check-directly="true"
+            multiple @on-check-change="handleCheckMenu"
+      ></Tree>
     </div>
     <div slot="footer">
       <Button @click="menuCancel">取消</Button>
@@ -85,6 +88,9 @@ export default {
         name: '',
         desc: ''
       },
+      nodes: {},
+      editId: {},
+      editMenuList: {},
       columns: [
         {
           type: 'selection',
@@ -110,21 +116,6 @@ export default {
         {
           title: '成员',
           align: 'center',
-          // render: (h, params) => {
-          //   let memberList = [];
-          //   let member;
-          //   for (member of params.row.members) {
-          //     memberList.push(member.name)
-          //   }
-          //   return h('span', memberList.map(function (item, index) {
-          //     return h('Tag', {
-          //       props: {
-          //         color: '#CCCCFF'
-          //       }
-          //     }, item)
-          //   }
-          //   ))
-          // }
           render: (h, { row, index }) => {
             let memberList = [];
             let member;
@@ -197,7 +188,10 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.editPerm(params.row)
+                      this.editPerm(params.row);
+                      this.editId['id'] = params.row.id;
+                      this.editId['name'] = params.row.name;
+                      this.nodes = this.$refs.tree.getCheckedNodes()
                     }
                   }
                 }, '菜单权限'
@@ -302,7 +296,7 @@ export default {
           }
           // on: {
           //   click: () => {
-          //     data.checked = !data.checked
+          //     // data.checked = !data.checked
           //   }
           // }
         }, [
@@ -349,7 +343,7 @@ export default {
       }
     },
     init () {
-      this.handleGetRoleList()
+      this.handleGetRoleList();
       this.handleGetMenuList()
     },
     delAll () {},
@@ -415,10 +409,19 @@ export default {
         }
       )
     },
-    handleUpdateMenu () {},
+    handleUpdateMenu () {
+      // console.log(this.editId['id'], this.editMenuList)
+      updateRole(this.editId['id'], this.editMenuList).then(
+        res => {
+          this.$Message.success({ background: true, content: `修改${this.editId['name']}成功,请刷新页面确认`, closable: true, duration: 5 });
+          this.menuModal = false
+        }
+      )
+    },
     menuCancel () {
       this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 });
-      this.menuModal = false
+      this.menuModal = false;
+      this.handleGetMenuList()
     },
     editPerm (value) {
       let roleMenus = value.menus;
@@ -438,10 +441,10 @@ export default {
           if (p.pid === null) {
             p.selected = true
           } else {
-            p.checked = true;
+            that.$set(p, 'checked', true)
           }
         } else {
-          p.checked = false;
+          that.$set(p, 'checked', false)
         }
         if (p.children) {
           that.checkMenuTree(p.children, roleMenus)
@@ -457,6 +460,18 @@ export default {
         }
       }
       return flag;
+    },
+    handleCheckMenu (val) {
+      let menuList = [];
+      val.forEach(menu => {
+        menuList.push(menu.id);
+        menuList.push(menu.pid);
+        menuList = menuList.filter(function (x) {
+          return x
+        });
+        // 通过Set去除重复的项
+        this.editMenuList['menus'] = Array.from(new Set(menuList));
+      })
     }
   },
   created () {
@@ -478,33 +493,3 @@ export default {
   }
 }
 </script>
-<style lang="less">
-  .m-table table {
-    table-layout: fixed;
-    font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
-    width:100%;
-    border-collapse:collapse;
-    border:1px solid #e9e9e9;
-  }
-  .m-table td, .m-table th {
-    font-size:1em;
-    border:1px solid #e9e9e9;
-    padding:3px 7px 2px 7px;
-    text-align: center;
-  }
-  .m-table th {
-    font-size:1.1em;
-    padding-top:5px;
-    padding-bottom:4px;
-    background-color:#f7f7f7;
-  }
-  .permModal {
-    .ivu-modal-body {
-      max-height: 600px;
-      /*overflow: auto;*/
-      font-size: 10px;
-      line-height: 1.5;
-      padding: 16px;
-    }
-  }
-</style>

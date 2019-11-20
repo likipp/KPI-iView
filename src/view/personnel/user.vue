@@ -135,7 +135,7 @@ export default {
       if (this.selectUser.length === 1) {
         deleteUser(this.selectUser[0].id, this.selectUser[0].name).then(
           res => {
-            this.$Message.success({ background: true, content: `删除${this.selectUser[0].name}成功!`, closable: true, duration: 5 })
+            this.$Message.success({ background: true, content: `删除${this.selectUser[0].name}成功!`, closable: true, duration: 5 });
             this.$emit('userList')
           }
         )
@@ -144,6 +144,7 @@ export default {
         for (user of this.selectUser) {
           deleteUser(user.id).then(
             res => {
+              console.log(res)
             }
           ).catch(error)
         }
