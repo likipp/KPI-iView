@@ -466,9 +466,11 @@ export default {
       val.forEach(menu => {
         menuList.push(menu.id);
         menuList.push(menu.pid);
-        menuList = menuList.filter(function (x) {
-          return x
-        });
+        // menuList = menuList.filter(function (x) {
+        //   return x
+        // });
+        // 使用箭头函数的简写方式
+        menuList = menuList.filter(item => item);
         // 通过Set去除重复的项
         this.editMenuList['menus'] = Array.from(new Set(menuList));
       })
