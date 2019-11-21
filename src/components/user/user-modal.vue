@@ -264,7 +264,6 @@ export default {
     //   console.log(this.userForm, 99999)
     // }
     type () {
-      console.log(this.$store.state.users.userForm, 666)
       this.userForm = this.$store.state.users.userForm
     }
   }

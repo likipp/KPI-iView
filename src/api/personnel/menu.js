@@ -9,3 +9,15 @@ export function getMenuList (params) {
     params
   })
 }
+
+export function getMenuTree (params) {
+  return axios({
+    url: '/api/menu/tree/',
+    method: 'get',
+    params
+  })
+}
+
+export function createMenu (params) {
+  return axios.post('/api/menus/', params)
+}

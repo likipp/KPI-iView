@@ -412,7 +412,6 @@ export default {
       )
     },
     handleUpdateMenu () {
-      // console.log(this.editId['id'], this.editMenuList)
       updateRole(this.editId['id'], this.editMenuList).then(
         res => {
           this.$Message.success({ background: true, content: `修改${this.editId['name']}成功,请刷新页面确认`, closable: true, duration: 5 });
