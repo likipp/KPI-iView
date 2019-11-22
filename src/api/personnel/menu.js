@@ -21,3 +21,11 @@ export function getMenuTree (params) {
 export function createMenu (params) {
   return axios.post('/api/menus/', params)
 }
+
+export function updateMenu (id, data) {
+  return axios({
+    url: `/api/menus/${id}/`,
+    method: 'patch',
+    data
+  })
+}

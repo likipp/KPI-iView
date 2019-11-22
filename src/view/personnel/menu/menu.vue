@@ -94,7 +94,8 @@
       </Form>
       <div slot='footer'>
         <Button @click='menuCancel'>取消</Button>
-        <Button type='primary' @click='handleAddMenu'>提交</Button>
+        <Button type='primary' @click='handleAddMenu' v-if="modalTitle === '添加菜单'">提交</Button>
+        <Button type="primary" @click="handleUpdateMenu" v-else>修改</Button>
       </div>
     </Modal>
   </div>
@@ -103,7 +104,7 @@
 import TreeTable from '_c/tree-table/Table/Table'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-import { getMenuList, getMenuTree, createMenu } from '../../../api/personnel/menu';
+import { getMenuList, getMenuTree, createMenu, updateMenu } from '../../../api/personnel/menu';
 import IconChoose from '_c/xboot/icon-choose'
 
 export default {
@@ -240,10 +241,8 @@ export default {
       // this.menuForm.path = row.path;
       // this.menuForm.sort = row.sort;
       // this.menuForm.name = row.name;
-      this.menuForm = row
+      this.menuForm = row;
       this.menuForm.pid = parseInt(row.pid)
-      console.log(this.menuForm, 233333)
-      console.log(row)
     },
     menuCancel () {
       this.$refs['menuForm'].resetFields();
@@ -252,7 +251,6 @@ export default {
       this.menuModal = false
     },
     handleAddMenu () {
-      console.log(this.menuForm, 6666);
       createMenu(this.menuForm).then(
         res => {
           this.$Message.success({ background: true, content: `新增${this.menuForm.name}成功`, closable: true, duration: 5 });
@@ -267,14 +265,26 @@ export default {
     handleGetMenuTree () {
       getMenuTree().then(
         res => {
-          console.log(res)
           this.menuTree = res.data
+        }
+      )
+    },
+    handleUpdateMenu () {
+      const { id, ...params } = this.menuForm;
+      updateMenu(id, params).then(
+        res => {
+          this.$Message.success({ background: true, content: `修改${params.name}成功`, closable: true, duration: 5 });
+          this.$refs['menuForm'].resetFields();
+          this.handelGetMenuList();
+          this.pidName = '';
+          this.pidIcon = '';
+          this.menuModal = false
         }
       )
     }
   },
   created () {
-    this.handelGetMenuList()
+    this.handelGetMenuList();
     this.handleGetMenuTree()
   }
 }
