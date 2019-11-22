@@ -42,23 +42,16 @@
           </Poptip>
         </template>
       </tree-table>
-<!--      <tree-table :data='data' :expand-all='true' :columns='columns' border></tree-table>-->
     </Card>
     <Modal draggable :mask-closable='false' :width='500' v-model='menuModal' :title='modalTitle' @on-cancel='menuCancel'>
       <Form ref='menuForm' :model='menuForm' :label-width='120' :rules='ruleMenu' label-colon>
-<!--        <div v-if='showParent'>-->
-<!--          <FormItem label='上级节点:'>{{ parentTitle }}</FormItem>-->
-<!--        </div>-->
-<!--        <FormItem label="父组件" prop="parent" v-if="this.pid !== null">-->
-          <!--          <Input v-model="menuForm.parent"></Input>-->
-          <!--        </FormItem>-->
         <FormItem label="父组件" prop="pid" v-if="this.modalTitle === '添加子节点'">
           <Icon :type='this.pidIcon' size='20' style="margin-right: 5px"></Icon>{{ pidName }}
           <InputNumber v-model="menuForm.pid" style="display: none"></InputNumber>
         </FormItem>
         <FormItem label="父组件" prop="pid" v-else-if="this.modalTitle === '编辑菜单'">
-          <treeselect v-model="menuForm.pid" :options="menuTree" :expand-all="true" placeholder="请选择上级菜单"></treeselect>
-        </FormItem>
+        <treeselect v-model="menuForm.pid" :options="menuTree" :expand-all="true" placeholder="请选择上级菜单"></treeselect>
+      </FormItem>
         <FormItem label="父组件" prop="pid" v-else>
           <p style="margin-top: 1px">顶级菜单</p>
         </FormItem>
@@ -80,9 +73,6 @@
             <Input v-model='menuForm.component' disabled></Input>
           </Tooltip>
         </FormItem>
-<!--        <FormItem label='图标' prop='icon'>-->
-<!--          <Input v-model='menuForm.icon'></Input>-->
-<!--        </FormItem>-->
         <FormItem label="图标" prop="icon" >
           <icon-choose v-model="menuForm.icon"></icon-choose>
         </FormItem>
@@ -278,7 +268,6 @@ export default {
       this.menuModal = false
     },
     handleAddMenu () {
-      console.log(this.menuForm, 6666)
       createMenu(this.menuForm).then(
         res => {
           this.$Message.success({ background: true, content: `新增${this.menuForm.name}成功`, closable: true, duration: 5 });
@@ -330,7 +319,6 @@ export default {
       )
     },
     showName (value) {
-      console.log(value, 899999)
       this.deleteName = value.name
     }
   },

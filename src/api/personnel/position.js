@@ -1,6 +1,6 @@
 import axios from 'axios/index'
 
-const position = '/api/position/'
+const position = '/api/position/';
 
 export function getPositionList (params) {
   return axios({
