@@ -31,7 +31,15 @@
         <template slot='action' slot-scope='scope'>
           <Button size='small' type='primary' @click='handleCreateSub(scope.row)' icon='ios-create-outline'>添加子节点</Button>
           <Button size='small' type='info' @click='handleEditSub(scope.row)' icon='md-list-box' style='margin-left: 5px'>编辑</Button>
-          <Button size='small' type='error' @click='(scope.row)' icon='md-trash' style='margin-left: 5px'>删除</Button>
+          <Poptip confirm transfer width="250"
+                  @on-ok='handleDeleteSub(scope.row)'
+                  @on-cancel="menuCancel"
+                  @on-popper-show="showName(scope.row)">
+            <div slot="title">你确定要删除{{ deleteName }}吗?</div>
+            <Tooltip content="下级菜单关联时不能删除" placement="top" transfer>
+              <Button size='small' type='error'  icon='md-trash' style='margin-left: 5px' :disabled="!!scope.row.children">删除</Button>
+            </Tooltip>
+          </Poptip>
         </template>
       </tree-table>
 <!--      <tree-table :data='data' :expand-all='true' :columns='columns' border></tree-table>-->
@@ -44,12 +52,15 @@
 <!--        <FormItem label="父组件" prop="parent" v-if="this.pid !== null">-->
           <!--          <Input v-model="menuForm.parent"></Input>-->
           <!--        </FormItem>-->
-        <FormItem label="父组件" prop="pid" v-if="this.modalTitle === '添加菜单'">
+        <FormItem label="父组件" prop="pid" v-if="this.modalTitle === '添加子节点'">
           <Icon :type='this.pidIcon' size='20' style="margin-right: 5px"></Icon>{{ pidName }}
           <InputNumber v-model="menuForm.pid" style="display: none"></InputNumber>
         </FormItem>
-        <FormItem label="父组件" prop="pid" v-else>
+        <FormItem label="父组件" prop="pid" v-else-if="this.modalTitle === '编辑菜单'">
           <treeselect v-model="menuForm.pid" :options="menuTree" :expand-all="true" placeholder="请选择上级菜单"></treeselect>
+        </FormItem>
+        <FormItem label="父组件" prop="pid" v-else>
+          <p style="margin-top: 1px">顶级菜单</p>
         </FormItem>
         <FormItem label='名称' prop='name'>
           <Input v-model='menuForm.name'></Input>
@@ -59,9 +70,14 @@
             <Input v-model='menuForm.path' />
           </Tooltip>
         </FormItem>
-        <FormItem label='组件地址' prop='component'>
+        <FormItem label='组件地址' prop='component' v-if="modalTitle !== '添加顶层菜单'">
           <Tooltip placement="right" :max-width="200" transfer content="填写组件所在路径, 如:view/personnel/user">
             <Input v-model='menuForm.component'></Input>
+          </Tooltip>
+        </FormItem>
+        <FormItem label='组件地址' prop='component' v-else>
+          <Tooltip placement="right" :max-width="200" transfer content="填写组件所在路径, 如:view/personnel/user">
+            <Input v-model='menuForm.component' disabled></Input>
           </Tooltip>
         </FormItem>
 <!--        <FormItem label='图标' prop='icon'>-->
@@ -94,7 +110,7 @@
       </Form>
       <div slot='footer'>
         <Button @click='menuCancel'>取消</Button>
-        <Button type='primary' @click='handleAddMenu' v-if="modalTitle === '添加菜单'">提交</Button>
+        <Button type='primary' @click='handleAddMenu' v-if="modalTitle !== '编辑菜单'">提交</Button>
         <Button type="primary" @click="handleUpdateMenu" v-else>修改</Button>
       </div>
     </Modal>
@@ -104,7 +120,7 @@
 import TreeTable from '_c/tree-table/Table/Table'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-import { getMenuList, getMenuTree, createMenu, updateMenu } from '../../../api/personnel/menu';
+import { getMenuList, getMenuTree, createMenu, updateMenu, deleteMenu } from '../../../api/personnel/menu';
 import IconChoose from '_c/xboot/icon-choose'
 
 export default {
@@ -123,12 +139,13 @@ export default {
         expandType: false,
         selectionType: true
       },
+      deleteName: '',
       type: 'create',
       pidName: '',
       pidIcon: '',
       tableData: [],
       menuTree: [],
-      modalTitle: '添加菜单',
+      modalTitle: '添加子节点',
       menuModal: false,
       showParent: false,
       parentTitle: '',
@@ -216,7 +233,12 @@ export default {
   },
   methods: {
     addMenu () {},
-    addRootMenu () {},
+    addRootMenu () {
+      this.modalTitle = '添加顶层菜单';
+      this.menuModal = true;
+      this.menuForm.pid = null;
+      this.menuForm.component = 'components/main'
+    },
     delAll () {},
     handelGetMenuList () {
       getMenuList().then(
@@ -226,6 +248,7 @@ export default {
       )
     },
     handleCreateSub (row) {
+      this.modalTitle = '添加子节点';
       this.pidName = row.name;
       this.pidIcon = row.icon;
       this.menuForm.pid = row.id;
@@ -242,7 +265,11 @@ export default {
       // this.menuForm.sort = row.sort;
       // this.menuForm.name = row.name;
       this.menuForm = row;
-      this.menuForm.pid = parseInt(row.pid)
+      if (row.pid) {
+        this.menuForm.pid = parseInt(row.pid)
+      } else {
+        this.menuForm.pid = null
+      }
     },
     menuCancel () {
       this.$refs['menuForm'].resetFields();
@@ -251,6 +278,7 @@ export default {
       this.menuModal = false
     },
     handleAddMenu () {
+      console.log(this.menuForm, 6666)
       createMenu(this.menuForm).then(
         res => {
           this.$Message.success({ background: true, content: `新增${this.menuForm.name}成功`, closable: true, duration: 5 });
@@ -265,6 +293,16 @@ export default {
     handleGetMenuTree () {
       getMenuTree().then(
         res => {
+          // let tTree = res.data;
+          // this.menuTree = [
+          //   {
+          //     pid: null,
+          //     label: '顶层菜单',
+          //     id: 9999,
+          //     children: {}
+          //   }
+          // ];
+          // this.menuTree[0].children = tTree
           this.menuTree = res.data
         }
       )
@@ -281,6 +319,19 @@ export default {
           this.menuModal = false
         }
       )
+    },
+    handleDeleteSub (value) {
+      const { id, ...params } = value;
+      deleteMenu(id, params).then(
+        res => {
+          this.$Message.success({ background: true, content: `删除${params.name}成功`, closable: true, duration: 5 });
+          this.handelGetMenuList()
+        }
+      )
+    },
+    showName (value) {
+      console.log(value, 899999)
+      this.deleteName = value.name
     }
   },
   created () {

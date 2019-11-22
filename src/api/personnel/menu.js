@@ -29,3 +29,7 @@ export function updateMenu (id, data) {
     data
   })
 }
+
+export function deleteMenu (id, data) {
+  return axios.delete(`/api/menus/${id}/`)
+}
