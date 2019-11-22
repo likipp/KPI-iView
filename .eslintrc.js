@@ -1,0 +1,27 @@
+module.exports = {
+  root: true,
+  'extends': [
+    'plugin:vue/essential',
+    '@vue/standard'
+  ],
+  rules: {
+    // allow async-await
+    'generator-star-spacing': 'off',
+    // allow debugger during development
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'vue/no-parsing-error': [2, {
+      'x-invalid-end-tag': false
+    }],
+    'no-undef': 'off',
+    'camelcase': 'off',
+    'semi': 0,
+    'no-unused-expressions': 0,
+    'no-sequences': 0,
+    'no-use-before-define': 0
+    // "no-restricted-syntax": ["error", "FunctionExpression", "WithStatement", "BinaryExpression[operator='in']"]
+    // 'quotes': ['error', 'double'],
+  },
+  parserOptions: {
+    parser: 'babel-eslint'
+  }
+};
