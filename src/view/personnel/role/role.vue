@@ -111,6 +111,7 @@ export default {
       editMenuList: {},
       editPermissionId: {},
       editPermissionList: {},
+      permissons: [],
       columns: [
         {
           type: 'selection',
@@ -506,55 +507,42 @@ export default {
     },
     editButton (value) {
       let roleButton = value.permissions;
-      this.checkButtonTree(this.permissionList, roleButton);
+      this.checkMenuTree(this.permissionList, roleButton);
       this.permissionModal = true;
       this.permissionTitle = `按钮分配--${value.name}`;
     },
-    checkButtonTree (permData, roleButton) {
-      let that = this;
-      permData.forEach(function (p) {
-        if (that.hasButton(p, roleButton)) {
-          if (p.pid === null) {
-            p.selected = true
-          } else {
-            that.$set(p, 'checked', true)
-          }
-        } else {
-          that.$set(p, 'checked', false)
-        }
-        if (p.children) {
-          that.checkButtonTree(p.children, roleButton)
-        }
-      })
-    },
-    hasButton (p, roleButton) {
-      let flag = false;
-      for (let i = 0; i < roleButton.length; i++) {
-        if (p.id === roleButton[i]) {
-          flag = true;
-          break
-        }
-      }
-      return flag;
-    },
-    handleCheckPermission (val) {
-      let permissions = [];
-      if (val === []) {
-        this.editPermissionList['permissions'] = []
-      } else {
-        val.forEach(permission => {
-          permissions.push(permission.id);
-          permissions.push(permission.pid);
-          permissions = permissions.filter(item => item);
-          this.editPermissionList['permissions'] = Array.from(new Set(permissions))
-        })
-      }
-    },
+    // checkButtonTree (permData, roleButton) {
+    //   let that = this;
+    //   permData.forEach(function (p) {
+    //     if (that.hasButton(p, roleButton)) {
+    //       if (p.pid === null) {
+    //         p.selected = true
+    //       } else {
+    //         that.$set(p, 'checked', true)
+    //       }
+    //     } else {
+    //       that.$set(p, 'checked', false)
+    //     }
+    //     if (p.children) {
+    //       that.checkButtonTree(p.children, roleButton)
+    //     }
+    //   })
+    // },
+    // hasButton (p, roleButton) {
+    //   let flag = false;
+    //   for (let i = 0; i < roleButton.length; i++) {
+    //     if (p.id === roleButton[i]) {
+    //       flag = true;
+    //       break
+    //     }
+    //   }
+    //   return flag;
+    // },
     handleUpdateButton () {
       updateRole(this.editPermissionId['id'], this.editPermissionList).then(
         res => {
           this.$Message.success({ background: true, content: `修改${this.editPermissionId['name']}成功,请刷新页面确认`, closable: true, duration: 5 });
-          this.permissionModal = false
+          this.permissionModal = false;
           this.init()
         }
       )
@@ -588,17 +576,34 @@ export default {
     },
     handleCheckMenu (val) {
       let menuList = [];
-      val.forEach(menu => {
-        menuList.push(menu.id);
-        menuList.push(menu.pid);
-        // menuList = menuList.filter(function (x) {
-        //   return x
-        // });
-        // 使用箭头函数的简写方式
-        menuList = menuList.filter(item => item);
-        // 通过Set去除重复的项
-        this.editMenuList['menus'] = Array.from(new Set(menuList));
-      })
+      if (val.length === 0) {
+        this.editMenuList['menus'] = []
+      } else {
+        val.forEach(menu => {
+          menuList.push(menu.id);
+          menuList.push(menu.pid);
+          // menuList = menuList.filter(function (x) {
+          //   return x
+          // });
+          // 使用箭头函数的简写方式
+          menuList = menuList.filter(item => item);
+          // 通过Set去除重复的项
+          this.editMenuList['menus'] = Array.from(new Set(menuList));
+        })
+      }
+    },
+    handleCheckPermission (val) {
+      let permissions = [];
+      if (val.length === 0) {
+        this.editPermissionList['permissions'] = []
+      } else {
+        val.forEach(permission => {
+          permissions.push(permission.id);
+          permissions.push(permission.pid);
+          permissions = permissions.filter(item => item);
+          this.editPermissionList['permissions'] = Array.from(new Set(permissions))
+        })
+      }
     },
     handleGetPermissionList () {
       getPermission().then(
