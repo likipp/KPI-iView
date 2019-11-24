@@ -102,7 +102,7 @@ export default {
           title: '操作',
           align: 'center',
           render: (h, params) => {
-            if (this.permTypes.includes('edit')) {
+            if (this.permTypes.includes('edit') || this.permTypes.includes('delete')) {
               return h('Div', [
                 h(Button, {
                   props: {
@@ -124,35 +124,35 @@ export default {
                     }
                   },
                   style: { marginRight: '12px' }
-                }, '修改')
-                // h(Poptip, {
-                //   props: {
-                //     confirm: true,
-                //     transfer: true,
-                //     placement: 'left-start',
-                //     title: `确定要删除${params.row.name}吗?`,
-                //     type: 'error',
-                //     size: 'small',
-                //     width: '300',
-                //     vModel: true
-                //   },
-                //   on: {
-                //     'on-ok': () => {
-                //       this.handelDeleteDep(params.row)
-                //     },
-                //     'on-cancel': () => {
-                //       this.$Message.info({ background: true, content: '点击了取消', duration: 3 })
-                //     }
-                //   }
-                // }, [
-                //   h(Button, {
-                //     props: {
-                //       type: 'error',
-                //       size: 'small',
-                //       icon: 'ios-trash-outline'
-                //     }
-                //   }, '删除')
-                // ])
+                }, '修改'),
+                h(Poptip, {
+                  props: {
+                    confirm: true,
+                    transfer: true,
+                    placement: 'left-start',
+                    title: `确定要删除${params.row.name}吗?`,
+                    type: 'error',
+                    size: 'small',
+                    width: '300',
+                    vModel: true
+                  },
+                  on: {
+                    'on-ok': () => {
+                      this.handelDeleteDep(params.row)
+                    },
+                    'on-cancel': () => {
+                      this.$Message.info({ background: true, content: '点击了取消', duration: 3 })
+                    }
+                  }
+                }, [
+                  h(Button, {
+                    props: {
+                      type: 'error',
+                      size: 'small',
+                      icon: 'ios-trash-outline'
+                    }
+                  }, '删除')
+                ])
               ])
             } else if (this.permTypes.includes('delete')) {
               return h('Div', [
@@ -185,6 +185,29 @@ export default {
                   }, '删除')
                 ])
               ])
+            } else if (this.permTypes.includes('edit')) {
+              return h('Div', [
+                h(Button, {
+                  props: {
+                    type: 'primary',
+                    size: 'small',
+                    icon: 'ios-create-outline'
+                  },
+                  on: {
+                    click: () => {
+                      this.handelGetTree();
+                      this.type = 'edit';
+                      this.modal = true;
+                      // 直接写=params.row 效果双向绑定一样.
+                      // this.depForm = params.row
+                      this.depForm.id = params.row.id;
+                      this.depForm.name = params.row.name;
+                      this.depForm.type = params.row.type;
+                      this.depForm.pid = params.row.pid
+                    }
+                  },
+                  style: { marginRight: '12px' }
+                }, '修改')])
             } else {
               return h('Span', { props: { color: '#17233d' } }, '当前权限只供查看')
             }
