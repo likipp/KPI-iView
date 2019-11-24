@@ -50,12 +50,25 @@
          scrollable width="500" @on-cancel="menuCancel" class="permModal">
     <div style="position: relative">
       <Tree ref="tree" :data="menuList" show-checkbox :render="renderContent" :check-directly="true"
-            multiple @on-check-change="handleCheckMenu"
-      ></Tree>
+            multiple @on-check-change="handleCheckMenu"></Tree>
     </div>
     <div slot="footer">
       <Button @click="menuCancel">取消</Button>
       <Button type="primary" @click="handleUpdateMenu">提交</Button>
+    </div>
+  </Modal>
+  <Modal v-model="permissionModal" :title="permissionTitle" :mask-closable="false" draggable
+         scrollable width="500" @on-cancel="buttonCancel">
+<!--    <Form ref="permissionForm" :model="permissionForm" :label-width="80" label-colon>-->
+<!--      <FormItem-->
+<!--    </Form>-->
+    <div style="position: relative">
+      <Tree ref="permissionTree" :data="permissionList" show-checkbox :render="renderPermission" :check-directly="true"
+            multiple @on-check-change="handleCheckPermission"></Tree>
+    </div>
+    <div slot="footer">
+      <Button @click="buttonCancel">取消</Button>
+      <Button type="primary" @click="handleUpdateButton">提交</Button>
     </div>
   </Modal>
 </div>
@@ -64,6 +77,7 @@
 <script>
 import { getRoleList, createRole, updateRole, deleteRole } from '@/api/personnel/role';
 import { getMenuList } from '@/api/personnel/menu';
+import { getPermission } from '../../../api/personnel/permission';
 import { Poptip, Button } from 'view-design';
 
 export default {
@@ -71,9 +85,11 @@ export default {
   data () {
     return {
       menuTitle: '',
+      permissionTitle: '',
       loading: false,
       roleModal: false,
       menuModal: false,
+      permissionModal: false,
       type: 'create',
       editIndex: -1,
       total: 0,
@@ -88,9 +104,13 @@ export default {
         name: '',
         desc: ''
       },
+      permissionForm: {},
       nodes: {},
+      buttonNodes: {},
       editId: {},
       editMenuList: {},
+      editPermissionId: {},
+      editPermissionList: {},
       columns: [
         {
           type: 'selection',
@@ -191,7 +211,7 @@ export default {
                       this.editPerm(params.row);
                       this.editId['id'] = params.row.id;
                       this.editId['name'] = params.row.name;
-                      this.nodes = this.$refs.tree.getCheckedNodes()
+                      // this.nodes = this.$refs.tree.getCheckedNodes()
                     }
                   }
                 }, '菜单权限'
@@ -206,6 +226,14 @@ export default {
                   },
                   style: {
                     marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.editButton(params.row);
+                      this.editPermissionId['id'] = params.row.id;
+                      this.editPermissionId['name'] = params.row.name;
+                      // this.buttonNodes = this.$refs.permissionTree.getCheckedNodes()
+                    }
                   }
                 }, '按钮权限'
               )
@@ -278,7 +306,46 @@ export default {
         name: [{ required: true, message: '名称不能为空', trigger: 'blur' }]
       },
       menuList: [],
+      permissionList: [],
       renderContent: (h, { data }) => {
+        let icon = '';
+        let color = '';
+        if (data.pid === null) {
+          icon = ' iconfont icon-bumen3';
+          color = '#2d8cf0'
+        } else {
+          icon = 'md-filing';
+          color = '#19be6b'
+        }
+        return h('Span', {
+          style: {
+            width: '100%',
+            display: 'inline-block',
+            cursor: 'pointer'
+          }
+          // on: {
+          //   click: () => {
+          //     // data.checked = !data.checked
+          //   }
+          // }
+        }, [
+          h('Span', [
+            h('Icon', {
+              props: {
+                type: icon,
+                size: '17'
+              },
+              style: {
+                marginRight: '8px',
+                color: color
+              }
+            }),
+            h('Span', data.name)
+          ])
+        ])
+      },
+      renderPermission: (h, { data }) => {
+        //
         let icon = '';
         let color = '';
         if (data.pid === null) {
@@ -344,7 +411,8 @@ export default {
     },
     init () {
       this.handleGetRoleList();
-      this.handleGetMenuList()
+      this.handleGetMenuList();
+      this.handleGetPermissionList()
     },
     delAll () {
       this.$Message.info({ background: true, content: '暂时没写', duration: 3 })
@@ -415,7 +483,8 @@ export default {
       updateRole(this.editId['id'], this.editMenuList).then(
         res => {
           this.$Message.success({ background: true, content: `修改${this.editId['name']}成功,请刷新页面确认`, closable: true, duration: 5 });
-          this.menuModal = false
+          this.menuModal = false;
+          this.init()
         }
       )
     },
@@ -424,20 +493,75 @@ export default {
       this.menuModal = false;
       this.handleGetMenuList()
     },
+    buttonCancel () {
+      this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 });
+      this.permissionModal = false;
+      this.handleGetMenuList()
+    },
     editPerm (value) {
       let roleMenus = value.menus;
       this.checkMenuTree(this.menuList, roleMenus);
       this.menuModal = true;
       this.menuTitle = `菜单分配--${value.name}`;
     },
+    editButton (value) {
+      let roleButton = value.permissions;
+      this.checkButtonTree(this.permissionList, roleButton);
+      this.permissionModal = true;
+      this.permissionTitle = `按钮分配--${value.name}`;
+    },
+    checkButtonTree (permData, roleButton) {
+      let that = this;
+      permData.forEach(function (p) {
+        if (that.hasButton(p, roleButton)) {
+          if (p.pid === null) {
+            p.selected = true
+          } else {
+            that.$set(p, 'checked', true)
+          }
+        } else {
+          that.$set(p, 'checked', false)
+        }
+        if (p.children) {
+          that.checkButtonTree(p.children, roleButton)
+        }
+      })
+    },
+    hasButton (p, roleButton) {
+      let flag = false;
+      for (let i = 0; i < roleButton.length; i++) {
+        if (p.id === roleButton[i]) {
+          flag = true;
+          break
+        }
+      }
+      return flag;
+    },
+    handleCheckPermission (val) {
+      let permissions = [];
+      if (val === []) {
+        this.editPermissionList['permissions'] = []
+      } else {
+        val.forEach(permission => {
+          permissions.push(permission.id);
+          permissions.push(permission.pid);
+          permissions = permissions.filter(item => item);
+          this.editPermissionList['permissions'] = Array.from(new Set(permissions))
+        })
+      }
+    },
+    handleUpdateButton () {
+      updateRole(this.editPermissionId['id'], this.editPermissionList).then(
+        res => {
+          this.$Message.success({ background: true, content: `修改${this.editPermissionId['name']}成功,请刷新页面确认`, closable: true, duration: 5 });
+          this.permissionModal = false
+          this.init()
+        }
+      )
+    },
     checkMenuTree (permData, roleMenus) {
       let that = this;
       permData.forEach(function (p) {
-        // console.log(!!that.hasPerm(p, roleMenus), p)
-        // p.checked = !!that.hasPerm(p, roleMenus);
-        // if (p.children) {
-        //   that.checkMenuTree(p.children, roleMenus)
-        // }
         if (that.hasPerm(p, roleMenus)) {
           if (p.pid === null) {
             p.selected = true
@@ -475,11 +599,19 @@ export default {
         // 通过Set去除重复的项
         this.editMenuList['menus'] = Array.from(new Set(menuList));
       })
+    },
+    handleGetPermissionList () {
+      getPermission().then(
+        res => {
+          this.permissionList = res.data
+        }
+      )
     }
   },
   created () {
     this.handleGetRoleList();
-    this.handleGetMenuList()
+    this.handleGetMenuList();
+    this.handleGetPermissionList()
   },
   computed: {
     curPage: function () {

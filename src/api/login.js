@@ -1,6 +1,6 @@
 import axios from 'axios/index'
 
-const authUrl = '/api/api-token-auth/'
+const authUrl = '/api/api-token-auth/';
 export function Login (data) {
   return axios({
     url: authUrl,
@@ -9,7 +9,7 @@ export function Login (data) {
   })
 }
 
-const verfiUrl = '/api/api-token-verify/'
+const verfiUrl = '/api/api-token-verify/';
 export function Verify (data) {
   return axios({
     url: verfiUrl,
@@ -18,7 +18,7 @@ export function Verify (data) {
   })
 }
 
-const refreshUrl = '/api/api-token-refresh/'
+const refreshUrl = '/api/api-token-refresh/';
 export function Refresh (data) {
   return axios({
     url: refreshUrl,

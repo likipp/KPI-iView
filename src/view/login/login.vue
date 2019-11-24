@@ -1,32 +1,31 @@
 <template>
   <div class="login" @keydown.enter="handleSubmit">
-    <div class="login-con">
-      <p slot="title" style="color: white">
-        <Icon type="md-log-in"></Icon>
-        欢迎登录
-      </p>
-      <div class="form-con">
-        <Form ref="loginForm" :model="form" :rules="rules">
-          <FormItem prop="userName">
-            <Input v-model="form.userName" placeholder="请输入用户名">
-              <Icon :size="16" type="ios-contact-outline" slot="prefix"></Icon>
-            </Input>
-          </FormItem>
-          <FormItem prop="password">
-            <Input type="password" v-model="form.password" password placeholder="请输入密码">
-              <Icon :size="16" type="ios-lock-outline" slot="prefix"></Icon>
-            </Input>
-          </FormItem>
-          <FormItem>
-            <Checkbox>记住密码</Checkbox>
-          </FormItem>
-          <FormItem>
-            <Button @click="handleSubmit" type="primary" long>登录</Button>
-          </FormItem>
-        </Form>
-        <p class="login-tip"></p>
-      </div>
-    </div>
+    <Row type="flex" justify="center" align="bottom">
+      <Col style="width: 369px">
+        <div class="login-con">
+          <p slot="title" style="color: black">
+            <Icon type="md-log-in"></Icon>
+            欢迎登录
+          </p>
+          <Form ref="loginForm" :model="form" :rules="rules" class="form">
+            <FormItem prop="userName">
+              <Input v-model="form.userName" placeholder="请输入用户名" clearable prefix="ios-contact" size="large">
+              </Input>
+            </FormItem>
+            <FormItem prop="password">
+              <Input type="password" v-model="form.password" password placeholder="请输入密码" clearable prefix="ios-lock" size="large">
+              </Input>
+            </FormItem>
+            <FormItem>
+              <Checkbox>记住密码</Checkbox>
+            </FormItem>
+            <FormItem>
+              <Button @click="handleSubmit" type="primary" long>登录</Button>
+            </FormItem>
+          </Form>
+        </div>
+      </Col>
+    </Row>
   </div>
 </template>
 

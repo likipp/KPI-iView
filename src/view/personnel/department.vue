@@ -112,14 +112,14 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.handelGetTree()
-                      this.type = 'edit'
-                      this.modal = true
+                      this.handelGetTree();
+                      this.type = 'edit';
+                      this.modal = true;
                       // 直接写=params.row 效果双向绑定一样.
                       // this.depForm = params.row
-                      this.depForm.id = params.row.id
-                      this.depForm.name = params.row.name
-                      this.depForm.type = params.row.type
+                      this.depForm.id = params.row.id;
+                      this.depForm.name = params.row.name;
+                      this.depForm.type = params.row.type;
                       this.depForm.pid = params.row.pid
                     }
                   },
@@ -205,6 +205,7 @@ export default {
   methods: {
     initMeta () {
       let permTypes = this.$route.meta.permTypes;
+      console.log(permTypes, 666666)
       if (permTypes !== null && permTypes !== undefined) {
         this.permTypes = permTypes
       }
@@ -217,54 +218,54 @@ export default {
       )
     },
     handelGetDepList () {
-      if (this.loading) return
-      this.loading = true
+      if (this.loading) return;
+      this.loading = true;
       getDepList().then(
         res => {
-          this.depList = res.data.results
+          this.depList = res.data.results;
           this.loading = false
         }
       )
     },
     createButton () {
-      this.modal = true
+      this.modal = true;
       this.handelGetTree()
     },
     handelDeleteDep (value) {
-      const { id, ...params } = value
+      const { id, ...params } = value;
       deleteDep(id, params).then(
         res => {
-          this.loading = false
-          this.$Message.success({ background: true, content: `删除部门${params.name}成功`, closable: true, duration: 5 })
+          this.loading = false;
+          this.$Message.success({ background: true, content: `删除部门${params.name}成功`, closable: true, duration: 5 });
           this.handelGetDepList()
         }
       )
     },
     handelCreateDep () {
-      this.handelGetTree()
+      this.handelGetTree();
       createDep(this.depForm).then(
         res => {
-          this.modal = false
-          this.$refs['depForm'].resetFields()
-          this.handelGetDepList()
-          this.$Message.success({ background: true, content: `新增${this.depForm.name}成功!`, closable: true, duration: 5 })
+          this.modal = false;
+          this.$refs['depForm'].resetFields();
+          this.handelGetDepList();
+          this.$Message.success({ background: true, content: `新增${this.depForm.name}成功!`, closable: true, duration: 5 });
         }
       )
     },
     handelUpdateDep () {
-      const { id, ...data } = this.depForm
+      const { id, ...data } = this.depForm;
       updateDep(id, data).then(
         res => {
-          this.modal = false
-          this.$refs['depForm'].resetFields()
-          this.handelGetDepList()
-          this.$Message.success({ background: true, content: `修改${data.name}成功!`, closable: true, duration: 5 })
+          this.modal = false;
+          this.$refs['depForm'].resetFields();
+          this.handelGetDepList();
+          this.$Message.success({ background: true, content: `修改${data.name}成功!`, closable: true, duration: 5 });
         }
       )
     },
     cancel () {
-      this.modal = false
-      this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 })
+      this.modal = false;
+      this.$Message.info({ background: true, content: '取消操作', closable: true, duration: 5 });
       this.$refs['depForm'].resetFields()
     }
   },
