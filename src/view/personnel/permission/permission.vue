@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div style="padding-bottom: 10px">
+      <Button type="primary" @click="handleCreateRootModal">新增根权限</Button>
+    </div>
     <tree-table :data='this.permissionList' :columns='columns'
                 :border='props.border'
                 :stripe='props.stripe'
@@ -27,13 +30,13 @@
     </tree-table>
     <Modal draggable :mask-closable="false" :width="500" v-model="permissionModal" :title="permissionTitle" @on-cancel="permissionCancel">
       <Form ref="permissionForm" :model="permissionForm" :label-width="85" :rules="rulePermission" label-colon>
-<!--        <FormItem label="模块名称" prop="pid">-->
-<!--          <treeselect v-model="permissionForm.pid" :options="permissionTree"-->
-<!--                      :expand-all="true" placeholder="请选择模块名称"></treeselect>-->
-<!--        </FormItem>-->
-        <FormItem label="模块名称" prop="pid">
+        <FormItem label="模块名称" prop="pid" v-if="permissionTitle === '添加权限方法' || type === 'create'">
           <span style="margin-top: 3px">{{ parentName }}</span>
           <Input v-model="permissionForm.pid" style="display: none"></Input>
+        </FormItem>
+        <FormItem label="模块名称" prop="pid" v-else-if="type === 'edit' && permissionForm.pid !== null">
+          <treeselect v-model="permissionForm.pid" :options="permissionTree"
+                      :expand-all="true" placeholder="请选择模块名称"></treeselect>
         </FormItem>
         <FormItem label="名称" prop="name">
           <Input v-model="permissionForm.name" placeholder="请输入名称" clearable></Input>
@@ -46,7 +49,7 @@
       </Form>
       <div slot="footer">
         <Button @click='permissionCancel'>取消</Button>
-        <Button type='primary' @click='handleAddPermission' v-if="permissionTitle === '添加权限方法'">提交</Button>
+        <Button type='primary' @click='handleAddPermission' v-if="permissionTitle === '添加权限方法' || permissionTitle === '添加根权限'">提交</Button>
         <Button type="primary" @click="handleUpdatePermission" v-else>修改</Button>
       </div>
     </Modal>
@@ -71,7 +74,7 @@ export default {
         showRowHover: true,
         showIndex: false,
         treeType: true,
-        isFold: true,
+        isFold: false,
         expandType: false,
         selectable: false
       },
@@ -126,6 +129,7 @@ export default {
       ],
       permissionModal: false,
       permissionTitle: '',
+      type: 'create',
       deleteName: '',
       parentName: '',
       permissionList: [],
@@ -157,12 +161,14 @@ export default {
       )
     },
     handleCreateModal (value) {
+      this.type = 'create';
       this.permissionModal = true;
       this.permissionTitle = '添加权限方法';
       this.permissionForm.pid = value.id;
       this.parentName = value.name
     },
     handleUpdateModal (value) {
+      this.type = 'edit';
       this.permissionModal = true;
       this.permissionTitle = `编辑${value.name}`;
       this.permissionForm = value;
@@ -208,6 +214,11 @@ export default {
           this.handleGetPermissionList()
         }
       )
+    },
+    handleCreateRootModal () {
+      this.type = 'createRoot';
+      this.permissionModal = true;
+      this.permissionTitle = '添加根权限';
     }
   },
   created () {

@@ -18,8 +18,6 @@ module.exports = {
     'no-unused-expressions': 0,
     'no-sequences': 0,
     'no-use-before-define': 0
-    // "no-restricted-syntax": ["error", "FunctionExpression", "WithStatement", "BinaryExpression[operator='in']"]
-    // 'quotes': ['error', 'double'],
   },
   parserOptions: {
     parser: 'babel-eslint'

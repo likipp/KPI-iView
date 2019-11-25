@@ -436,7 +436,7 @@ export const setTitle = (routeItem, vm) => {
 
 const backendMenuToRoute = (menu) => {
   let route = Object.assign({}, menu);
-  route.meta.permTypes = route.permTypes ? route.permTypes : null;
+  // route.meta.permTypes = route.permTypes ? route.permTypes : null;
   route.component = lazyLoading(route.component);
   // route.component = resolve => require([`@/${menu.component}`], resolve)
   return route
@@ -447,6 +447,7 @@ export const backendMenusToRouters = (menus) => {
   forEach(menus, (menu) => {
     // 将后端数据转换成路由数据
     let route = backendMenuToRoute(menu)
+    console.log(route.permTypes, 67777)
     // 如果后端数据有下级，则递归处理下级
     if (menu.children && menu.children.length !== 0) {
       route.children = backendMenusToRouters(menu.children)

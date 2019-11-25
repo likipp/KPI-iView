@@ -134,6 +134,7 @@ export default {
       return new Promise((resolve, reject) => {
         try {
           uerInfo().then(res => {
+            console.log(res.data.routerData, 'res')
             let routers = backendMenusToRouters(res.data.routerData)
             commit('setRouters', routers)
             // setToken(res.data.resultData.token)
