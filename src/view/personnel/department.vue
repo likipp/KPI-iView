@@ -228,7 +228,6 @@ export default {
   methods: {
     initMeta () {
       let permTypes = this.$route.meta.permTypes;
-      console.log(permTypes, 666666)
       if (permTypes !== null && permTypes !== undefined) {
         this.permTypes = permTypes
       }

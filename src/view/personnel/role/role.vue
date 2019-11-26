@@ -77,7 +77,7 @@
 <script>
 import { getRoleList, createRole, updateRole, deleteRole } from '@/api/personnel/role';
 import { getMenuList } from '@/api/personnel/menu';
-import { getPermission } from '../../../api/personnel/permission';
+import { getPermissionTree } from '../../../api/personnel/permission';
 import { Poptip, Button } from 'view-design';
 
 export default {
@@ -598,15 +598,17 @@ export default {
         this.editPermissionList['permissions'] = []
       } else {
         val.forEach(permission => {
-          permissions.push(permission.id);
-          permissions.push(permission.pid);
-          permissions = permissions.filter(item => item);
-          this.editPermissionList['permissions'] = Array.from(new Set(permissions))
+          if (permission.type) {
+            permissions.push(permission.id);
+            permissions.push(permission.pid);
+            permissions = permissions.filter(item => item);
+            this.editPermissionList['permissions'] = Array.from(new Set(permissions))
+          }
         })
       }
     },
     handleGetPermissionList () {
-      getPermission().then(
+      getPermissionTree().then(
         res => {
           this.permissionList = res.data
         }

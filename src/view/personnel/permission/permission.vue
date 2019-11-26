@@ -3,7 +3,7 @@
     <div style="padding-bottom: 10px">
       <Button type="primary" @click="handleCreateRootModal">新增根权限</Button>
     </div>
-    <tree-table :data='this.permissionList' :columns='columns'
+    <tree-table :data='this.permissionTree' :columns='columns'
                 :border='props.border'
                 :stripe='props.stripe'
                 :show-header='props.showHeader'
@@ -15,8 +15,8 @@
                 :selectable='props.selectable'>
       >
       <template slot="action" slot-scope="scope">
-        <Button size='small' type='primary' icon='ios-create-outline' style='margin-left: 5px' @click="handleCreateModal(scope.row)" v-if="!!scope.row.children || scope.row.pid === null">添加</Button>
-        <Button size='small' type='info' icon='md-list-box' style='margin-left: 5px' @click="handleUpdateModal(scope.row)">编辑</Button>
+        <Button size='small' type='primary' icon='ios-create-outline' style='margin-left: 5px' @click="handleCreateModal(scope.row)" v-if="!!scope.row.children || scope.row.method === null">添加</Button>
+        <Button size='small' type='info' icon='md-list-box' style='margin-left: 5px' @click="handleUpdateModal(scope.row)" v-if="scope.row.method !== null">编辑</Button>
         <Poptip confirm transfer width="250"
             @on-ok="handleDeletePermission(scope.row)"
             @on-cancel="permissionCancel"
@@ -35,7 +35,7 @@
           <Input v-model="permissionForm.pid" style="display: none"></Input>
         </FormItem>
         <FormItem label="模块名称" prop="pid" v-else-if="type === 'edit' && permissionForm.pid !== null">
-          <treeselect v-model="permissionForm.pid" :options="permissionTree"
+          <treeselect v-model="permissionForm.pid" :options="menuTree"
                       :expand-all="true" placeholder="请选择模块名称"></treeselect>
         </FormItem>
         <FormItem label="名称" prop="name">
@@ -60,6 +60,7 @@
 import TreeTable from '_c/tree-table/Table/Table'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+import { getMenuTree } from '../../../api/personnel/menu';
 import { getPermission, getPermissionTree, createPermission, updatePermission, deletePermission } from '../../../api/personnel/permission';
 
 export default {
@@ -106,10 +107,10 @@ export default {
         }
       ],
       nameList: [
-        {
-          value: 'all',
-          label: '顶层目录'
-        },
+        // {
+        //   value: 'all',
+        //   label: '顶层目录'
+        // },
         {
           value: 'view',
           label: '查看'
@@ -134,6 +135,7 @@ export default {
       parentName: '',
       permissionList: [],
       permissionTree: [],
+      menuTree: [],
       permissionForm: {
         name: '',
         method: '',
@@ -160,6 +162,13 @@ export default {
         }
       )
     },
+    handleGetMenuTree () {
+      getMenuTree().then(
+        res => {
+          this.menuTree = res.data
+        }
+      )
+    },
     handleCreateModal (value) {
       this.type = 'create';
       this.permissionModal = true;
@@ -172,7 +181,7 @@ export default {
       this.permissionModal = true;
       this.permissionTitle = `编辑${value.name}`;
       this.permissionForm = value;
-      this.permissionForm.pid = value.pid
+      // this.permissionForm.pid = value.pid
     },
     handleDeletePermission (value) {
       const { id, ...params } = value;
@@ -199,7 +208,7 @@ export default {
           this.$refs['permissionForm'].resetFields();
           this.permissionTitle = '';
           this.permissionModal = false;
-          this.handleGetPermissionList()
+          this.handleGetPermissionTree()
         }
       )
     },
@@ -211,7 +220,7 @@ export default {
           this.$refs['permissionForm'].resetFields();
           this.permissionTitle = '';
           this.permissionModal = false;
-          this.handleGetPermissionList()
+          this.handleGetPermissionTree()
         }
       )
     },
@@ -223,7 +232,8 @@ export default {
   },
   created () {
     this.handleGetPermissionList();
-    this.handleGetPermissionTree()
+    this.handleGetPermissionTree();
+    this.handleGetMenuTree()
   }
 }
 </script>
