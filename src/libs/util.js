@@ -436,7 +436,8 @@ export const setTitle = (routeItem, vm) => {
 
 const backendMenuToRoute = (menu) => {
   let route = Object.assign({}, menu);
-  // route.meta.permTypes = route.permTypes ? route.permTypes : null;
+  // 向meta信息中插入permTypes ["edit", "add"], 有方法的, 页面有按钮
+  route.meta.permTypes = route.permTypes ? route.permTypes : null;
   route.component = lazyLoading(route.component);
   // route.component = resolve => require([`@/${menu.component}`], resolve)
   return route

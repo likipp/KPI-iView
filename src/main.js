@@ -84,7 +84,6 @@ if (token) {
         store,
         render: h => h(App),
         created () {
-          console.log(res, 'res')
           const routers = backendMenusToRouters(res)
         }
       })

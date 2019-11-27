@@ -539,6 +539,7 @@ export default {
     //   return flag;
     // },
     handleUpdateButton () {
+      console.log(this.editPermissionId['id'], this.editPermissionList)
       updateRole(this.editPermissionId['id'], this.editPermissionList).then(
         res => {
           this.$Message.success({ background: true, content: `修改${this.editPermissionId['name']}成功,请刷新页面确认`, closable: true, duration: 5 });
@@ -554,7 +555,11 @@ export default {
           if (p.pid === null) {
             p.selected = true
           } else {
-            that.$set(p, 'checked', true)
+            if (p.type !== 'children') {
+              that.$set(p, 'checked', false)
+            } else {
+              that.$set(p, 'checked', true)
+            }
           }
         } else {
           that.$set(p, 'checked', false)
@@ -593,6 +598,7 @@ export default {
       }
     },
     handleCheckPermission (val) {
+      console.log(val, 666)
       let permissions = [];
       if (val.length === 0) {
         this.editPermissionList['permissions'] = []
@@ -600,9 +606,10 @@ export default {
         val.forEach(permission => {
           if (permission.type) {
             permissions.push(permission.id);
-            permissions.push(permission.pid);
-            permissions = permissions.filter(item => item);
-            this.editPermissionList['permissions'] = Array.from(new Set(permissions))
+            // permissions.push(permission.pid);
+            // permissions = permissions.filter(item => item);
+            // this.editPermissionList['permissions'] = Array.from(new Set(permissions))
+            this.editPermissionList['permissions'] = permissions
           }
         })
       }
