@@ -539,7 +539,6 @@ export default {
     //   return flag;
     // },
     handleUpdateButton () {
-      console.log(this.editPermissionId['id'], this.editPermissionList)
       updateRole(this.editPermissionId['id'], this.editPermissionList).then(
         res => {
           this.$Message.success({ background: true, content: `修改${this.editPermissionId['name']}成功,请刷新页面确认`, closable: true, duration: 5 });
@@ -598,7 +597,6 @@ export default {
       }
     },
     handleCheckPermission (val) {
-      console.log(val, 666)
       let permissions = [];
       if (val.length === 0) {
         this.editPermissionList['permissions'] = []

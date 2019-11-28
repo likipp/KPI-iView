@@ -6,9 +6,12 @@
       </Badge>
       <Icon :size="18" type="md-arrow-dropdown"></Icon>
       <DropdownMenu slot="list">
-        <DropdownItem name="message">
-          消息中心<Badge style="margin-left: 10px" :count="messageUnreadCount"></Badge>
-        </DropdownItem>
+<!--        <DropdownItem name="message">-->
+<!--          消息中心<Badge style="margin-left: 10px" :count="messageUnreadCount"></Badge>-->
+<!--        </DropdownItem>-->
+        <router-link to="/owner/owner-space">
+          <DropdownItem name="ownerSpace">个人中心</DropdownItem>
+        </router-link>
         <DropdownItem name="logout">退出登录</DropdownItem>
       </DropdownMenu>
     </Dropdown>
@@ -46,12 +49,16 @@ export default {
         name: 'message_page'
       })
     },
+    ownerSpace () {
+      //
+    },
     handleClick (name) {
       switch (name) {
-        case 'logout': this.logout()
-          break
-        case 'message': this.message()
-          break
+        case 'logout': this.logout();
+          break;
+        case 'message': this.message();
+          break;
+        // case 'ownerSpace': this.ownerSpace()
       }
     }
   }

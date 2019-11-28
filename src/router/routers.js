@@ -51,6 +51,26 @@ export default [
     ]
   },
   {
+    path: '/owner',
+    name: 'owner',
+    component: Main,
+    meta: {
+      hideInMenu: true,
+      notCache: true
+    },
+    children: [
+      {
+        path: 'owner-space',
+        name: '个人中心',
+        meta: {
+          icon: 'md-notifications',
+          title: '个人中心'
+        },
+        component: () => import('@/view/owner-space/owner-space.vue')
+      }
+    ]
+  },
+  {
     path: '/message',
     name: 'message',
     component: Main,

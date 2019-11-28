@@ -67,7 +67,6 @@ export default {
     handleGetPermissionTree () {
       getPermissionTree().then(
         res => {
-          console.log(res, 666)
           this.data = res.data
         }
       )

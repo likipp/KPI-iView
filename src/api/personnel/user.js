@@ -23,6 +23,14 @@ export function updateUser (id, data) {
   })
 }
 
+export function changePassword (id, data) {
+  return axios({
+    url: `/api/users/${id}/change-password/`,
+    method: 'post',
+    data
+  })
+}
+
 export function deleteUser (id, data) {
   return axios.delete(`/api/users/${id}/`)
 }

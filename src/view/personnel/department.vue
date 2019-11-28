@@ -48,6 +48,8 @@ import { Button, Poptip } from 'view-design'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { getOrganizationTree } from '@/api/personnel/organizationtree'
+import { checkInclude } from '../../libs/validate';
+// import { checkInclude } from '/src/libs/validate'
 // import depTable from '_c/department/dep-table'
 
 export default {
@@ -102,7 +104,8 @@ export default {
           title: '操作',
           align: 'center',
           render: (h, params) => {
-            if (this.permTypes.includes('edit') || this.permTypes.includes('delete')) {
+            if (this.permTypes.includes('edit') && this.permTypes.includes('delete')) {
+              console.log(checkInclude(this.permTypes, ['edit', 'delete']), '我是结果判断')
               return h('Div', [
                 h(Button, {
                   props: {
