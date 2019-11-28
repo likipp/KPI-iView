@@ -114,8 +114,8 @@ export default {
             const data = res.data
             setStore('roles', data.roles);
             commit('setAvator', data.avatar);
-            commit('setUserName', data.name);
-            commit('setUserId', data.user_id);
+            commit('setUserName', data.username);
+            commit('setUserId', data.id);
             resolve(res.data)
           })
         } catch (error) {

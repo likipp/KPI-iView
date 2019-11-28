@@ -68,7 +68,7 @@
 
 <script>
 import SetPassword from '_c/xboot/set-password';
-// import { changePassword } from '../../api/personnel/user';
+import { changePassword } from '../../api/personnel/user';
 
 export default {
   name: 'owner-space',
@@ -111,7 +111,19 @@ export default {
       this.strength = strength;
     },
     handleChangePassword () {
-      // changePassword()
+      let id = this.$store.state.user.userId;
+      changePassword(id, this.changePassForm).then(
+        res => {
+          console.log(res.status, 6666)
+          this.$Message.success({ background: true, content: '密码修改成功', duration: 3 });
+          this.changePassModel = false;
+          this.$refs['changePassForm'].resetFields()
+        }
+      ).catch(error => {
+        if (error.response.status === 500) {
+          this.$Message.error({ background: true, content: '旧密码错误', duration: 3 });
+        }
+      })
     },
     cancel () {
       this.changePassModel = false;
