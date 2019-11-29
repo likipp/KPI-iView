@@ -12,16 +12,16 @@
           <div class="title">{{ currMenu }}</div>
           <div>
             <div v-show="currMenu === '基本信息'">
-              <Form :label-width="90" label-position="left">
+              <Form ref="userForm" :model="userForm" :label-width="90" label-position="left">
                 <FormItem label="用户头像：">
-<!--                  <upload-pic-thumb-->
-<!--                    @on-change="userForm.avatar=$event"-->
-<!--                    :multiple="false"-->
-<!--                    ref="uploadThumb"-->
-<!--                  ></upload-pic-thumb>-->
+                  <upload-pic-thumb
+                    @on-change="userForm.avatar = $event"
+                    :multiple="false"
+                    ref="uploadThumb"
+                  ></upload-pic-thumb>
                 </FormItem>
-                <FormItem label="昵称：" prop="nickName">
-                  <Input style="width: 250px" />
+                <FormItem label="昵称：" prop="username">
+                  <Input style="width: 250px" v-model="userForm.username"/>
                 </FormItem>
                 <FormItem label="个人简介：" prop="description">
                   <Input
@@ -30,6 +30,13 @@
                     :autosize="{minRows: 3,maxRows: 5}"
                     placeholder="个人简介"
                   ></Input>
+                </FormItem>
+                <FormItem>
+                  <Button
+                    type="primary"
+                    style="width: 70px;margin-right:5px"
+                    @click="saveEdit"
+                  >保存</Button>
                 </FormItem>
               </Form>
             </div>
@@ -68,11 +75,12 @@
 
 <script>
 import SetPassword from '_c/xboot/set-password';
-import { changePassword } from '../../api/personnel/user';
+import uploadPicThumb from '_c/xboot/upload-pic-thumb';
+import { changePassword, updateUser } from '../../api/personnel/user';
 
 export default {
   name: 'owner-space',
-  components: { SetPassword },
+  components: { SetPassword, uploadPicThumb },
   data () {
     const validConPassword = (rule, value, callback) => {
       if (value !== this.changePassForm.newPass) {
@@ -97,10 +105,21 @@ export default {
         oldPass: [{ required: true, message: '旧密码不能为空', trigger: 'blur' }],
         newPass: [{ required: true, message: '新密码不能为空', trigger: 'blur' }],
         newPassCon: [{ required: true, message: '确认新密码不能为空', trigger: 'blur' }, { validator: validConPassword, trigger: 'blur' }]
+      },
+      userForm: {
+        id: '',
+        avatar: '',
+        username: ''
       }
     }
   },
   methods: {
+    init () {
+      this.userForm.id = this.$store.state.user.userId;
+      this.userForm.avatar = this.$store.state.user.avatorImgPath;
+      this.userForm.username = this.$store.state.user.userName;
+      this.$refs.uploadThumb.setData(this.$store.state.user.avatorImgPath)
+    },
     changeMenu (v) {
       this.currMenu = v
     },
@@ -114,7 +133,6 @@ export default {
       let id = this.$store.state.user.userId;
       changePassword(id, this.changePassForm).then(
         res => {
-          console.log(res.status, 6666)
           this.$Message.success({ background: true, content: '密码修改成功', duration: 3 });
           this.changePassModel = false;
           this.$refs['changePassForm'].resetFields()
@@ -129,6 +147,16 @@ export default {
       this.changePassModel = false;
       this.$refs['changePassForm'].resetFields();
       this.$Message.info({ background: true, content: '点击了取消', duration: 3 })
+    },
+    saveEdit () {
+      const { id, ...params } = this.userForm;
+      params.avatar = params.avatar.split('media/')[1];
+      console.log(id, params.avatar)
+      updateUser(id, params).then(
+        res => {
+          console.log(11111, res)
+        }
+      )
     }
   },
   computed: {
@@ -139,6 +167,9 @@ export default {
       if (this.status !== 'true') disabled = true;
       return disabled
     }
+  },
+  mounted () {
+    this.init()
   }
 }
 </script>

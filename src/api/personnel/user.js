@@ -16,6 +16,7 @@ export function createUser (params) {
 }
 
 export function updateUser (id, data) {
+  console.log(data, 'data')
   return axios({
     url: `/api/users/${id}/`,
     method: 'patch',
