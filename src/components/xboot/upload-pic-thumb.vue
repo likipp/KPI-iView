@@ -10,7 +10,7 @@
         </div>
       </div>
       <div v-else-if="item.status === 'failed'">
-        <Avatar :style="{ background: color }">{{ userName }}</Avatar>
+        <Avatar :style="{ background: color }" size="large">{{ userName }}</Avatar>
       </div>
       <div v-else>
         <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
@@ -187,7 +187,11 @@ export default {
     }
   },
   mounted () {
+    console.log(this.uploadList, 'mounted')
     this.init();
+  },
+  created () {
+    console.log(this.uploadList, 'created')
   },
   computed: {
     userName () {
