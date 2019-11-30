@@ -187,11 +187,9 @@ export default {
     }
   },
   mounted () {
-    console.log(this.uploadList, 'mounted')
     this.init();
   },
   created () {
-    console.log(this.uploadList, 'created')
   },
   computed: {
     userName () {
