@@ -1,12 +1,16 @@
 <template>
   <div>
+<!--    <div class="upload-list" v-if="this.uploadList[0].status === 'failed'">11111</div>-->
     <div class="upload-list" v-for="(item,index) in uploadList" :key="index">
       <div v-if="item.status === 'finished'">
         <img :src="item.url">
         <div class="upload-list-cover">
-          <Icon type="ios-eye-outline" @click="handleView(item.url)"></Icon>
-          <Icon type="ios-trash-outline" @click="handleRemove(item)"></Icon>
+          <Icon type="ios-eye-outline" @click="handleView(item.url)">预览</Icon>
+          <Icon type="ios-trash-outline" @click="handleRemove(item)">删除</Icon>
         </div>
+      </div>
+      <div v-else-if="item.status === 'failed'">
+        <Avatar :style="{ background: color }">{{ userName }}</Avatar>
       </div>
       <div v-else>
         <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
@@ -45,6 +49,7 @@
 <script>
 import { uploadFile } from '@/api/index';
 
+const ColorList = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae'];
 export default {
   name: 'uploadPicThumb',
   props: {
@@ -155,11 +160,19 @@ export default {
       }
       if (typeof v === 'string') {
         this.uploadList = [];
-        let item = {
-          url: v,
-          status: 'finished'
-        };
-        this.uploadList.push(item);
+        if (v === '') {
+          let item = {
+            url: v,
+            status: 'failed'
+          };
+          this.uploadList.push(item);
+        } else {
+          let item = {
+            url: v,
+            status: 'finished'
+          };
+          this.uploadList.push(item);
+        }
       } else if (typeof v === 'object') {
         this.uploadList = [];
         v.forEach(e => {
@@ -175,6 +188,15 @@ export default {
   },
   mounted () {
     this.init();
+  },
+  computed: {
+    userName () {
+      return this.$store.state.user.name
+    },
+    color () {
+      const index = this.$store.state.user.userId;
+      return index < ColorList.length - 1 ? ColorList[index + 1] : ColorList[0];
+    }
   }
 };
 </script>
@@ -182,16 +204,16 @@ export default {
 <style lang="less">
   .upload-list {
     display: inline-block;
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     text-align: center;
-    line-height: 60px;
+    line-height: 80px;
     border: 1px solid transparent;
     border-radius: 4px;
     overflow: hidden;
     background: #fff;
     position: relative;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    /*box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);*/
     margin-right: 5px;
   }
   .upload-list img {

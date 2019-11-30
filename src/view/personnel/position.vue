@@ -8,9 +8,9 @@
           <Icon type=" iconfont icon-jurassic_add-user" size="15" ></Icon>新增岗位</Button>
       </div>
       <Table :data="positionList" :columns="columns" border stripe></Table>
-      <Modal width="800" :title="type === 'create' ? '增加岗位' : '修改岗位'" draggable
+      <Modal width="400" :title="type === 'create' ? '增加岗位' : '修改岗位'" draggable
              scrollable v-model="modal" @on-cancel="cancel">
-        <Form ref="posForm" :model="posForm" :label-width="80" label-colon>
+        <Form ref="posForm" :model="posForm" :label-width="60" label-colon>
           <Row>
             <Col>
               <FormItem label="名称" prop="name">
@@ -39,6 +39,7 @@ export default {
   components: { PositionTable },
   data () {
     return {
+      permType: [],
       modal: false,
       type: 'create',
       positionList: [],
@@ -100,7 +101,12 @@ export default {
                 },
                 on: {
                   'on-ok': () => {
-                    this.handelDeletePos(params.row)
+                    if (!this.permType.includes('delete')) {
+                      // this.$Message.error({ background: true, content: '您没有删除权限!', duration: 3 })
+                      this.$Notice.error({ title: '您没有删除权限!' })
+                    } else {
+                      this.handelDeletePos(params.row)
+                    }
                   },
                   'on-cancel': () => {
                     this.$Message.info({ background: true, content: '点击了取消', duration: 3 })
@@ -122,6 +128,12 @@ export default {
     }
   },
   methods: {
+    initMeta () {
+      let permTypes = this.$route.meta.permTypes;
+      if (permTypes !== null && permTypes !== undefined) {
+        this.permTypes = permTypes
+      }
+    },
     handleGetPositionList () {
       getPositionList().then(
         res => {
@@ -168,6 +180,7 @@ export default {
   },
   created () {
     this.handleGetPositionList()
+    this.initMeta()
   }
 }
 </script>

@@ -12,16 +12,22 @@
           <div class="title">{{ currMenu }}</div>
           <div>
             <div v-show="currMenu === '基本信息'">
-              <Form ref="userForm" :model="userForm" :label-width="90" label-position="left">
-                <FormItem label="用户头像：">
+              <Form ref="userForm" :model="userForm" :label-width="90" label-position="left" label-colon>
+                <FormItem label="用户头像">
                   <upload-pic-thumb
                     @on-change="userForm.avatar = $event"
                     :multiple="false"
                     ref="uploadThumb"
                   ></upload-pic-thumb>
                 </FormItem>
-                <FormItem label="昵称：" prop="username">
-                  <Input style="width: 250px" v-model="userForm.username"/>
+                <FormItem label="帐号" prop="username">
+                  <span>{{ userForm.username }}</span>
+                </FormItem>
+                <FormItem label="名称" prop="name">
+                  <Input style="width: 250px" v-model="userForm.name"/>
+                </FormItem>
+                <FormItem label="加入时间" prop="create_time">
+                  <span>{{ userForm.create_time }}</span>
                 </FormItem>
                 <FormItem label="个人简介：" prop="description">
                   <Input
@@ -76,7 +82,7 @@
 <script>
 import SetPassword from '_c/xboot/set-password';
 import uploadPicThumb from '_c/xboot/upload-pic-thumb';
-import { changePassword, updateUser } from '../../api/personnel/user';
+import { changePassword, updateUserCenter } from '../../api/personnel/user';
 
 export default {
   name: 'owner-space',
@@ -109,15 +115,23 @@ export default {
       userForm: {
         id: '',
         avatar: '',
-        username: ''
+        username: '',
+        name: '',
+        create_time: ''
       }
     }
   },
   methods: {
     init () {
       this.userForm.id = this.$store.state.user.userId;
-      this.userForm.avatar = this.$store.state.user.avatorImgPath;
+      if (this.$store.state.user.avatorImgPath === 'http://127.0.0.1:8000/media/') {
+        this.userForm.avatar = ''
+      } else {
+        this.userForm.avatar = this.$store.state.user.avatorImgPath;
+      }
       this.userForm.username = this.$store.state.user.userName;
+      this.userForm.name = this.$store.state.user.name;
+      this.userForm.create_time = this.$store.state.user.create_time;
       this.$refs.uploadThumb.setData(this.$store.state.user.avatorImgPath)
     },
     changeMenu (v) {
@@ -150,11 +164,12 @@ export default {
     },
     saveEdit () {
       const { id, ...params } = this.userForm;
+      // 传递过来的带http://, 存入后端时, 需要删除掉
       params.avatar = params.avatar.split('media/')[1];
-      console.log(id, params.avatar)
-      updateUser(id, params).then(
+      updateUserCenter(id, params).then(
         res => {
-          console.log(11111, res)
+          this.$Message.success({ background: true, content: '修改成功', duration: 3 });
+          this.$store.commit('setAvatar', params.avatar)
         }
       )
     }

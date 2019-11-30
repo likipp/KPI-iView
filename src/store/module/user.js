@@ -3,6 +3,7 @@ import { setToken, getToken } from '@/libs/util'
 import Cookies from 'js-cookie'
 import { uerInfo } from '../../api/personnel/user'
 import { setStore } from '../../libs/storage';
+import { parseTime } from '../../libs/times';
 
 // import { backendMenusToRouters } from '../../libs/util'
 // import router from '../../router'
@@ -12,8 +13,10 @@ import { setStore } from '../../libs/storage';
 export default {
   state: {
     userName: '',
+    name: '',
     userId: '',
     avatorImgPath: '',
+    create_time: '',
     token: getToken(),
     // access: '',
     hasGetInfo: false
@@ -24,21 +27,31 @@ export default {
     // messageContentStore: {}
   },
   mutations: {
-    setAvator (state, avatorPath) {
-      state.avatorImgPath = avatorPath
+    setAvatar (state, avatorPath) {
+      if (avatorPath === 'http://127.0.0.1:8000/media/') {
+        state.avatorImgPath = ''
+      } else {
+        state.avatorImgPath = avatorPath
+      }
     },
     setUserId (state, id) {
       state.userId = id
     },
-    setUserName (state, name) {
-      state.userName = name
+    setName (state, name) {
+      state.name = name
+    },
+    setUserName (state, userName) {
+      state.userName = userName
     },
     // setAccess (state, access) {
     //   state.access = access
     // },
     setToken (state, token) {
-      state.token = token
+      state.token = token;
       setToken(token)
+    },
+    setCreateTime (state, create_time) {
+      state.create_time = create_time
     }
     // setHasGetInfo (state, status) {
     //   state.hasGetInfo = status
@@ -111,11 +124,13 @@ export default {
       return new Promise((resolve, reject) => {
         try {
           uerInfo(state.token).then(res => {
-            const data = res.data
+            const data = res.data;
             setStore('roles', data.roles);
-            commit('setAvator', data.avatar);
+            commit('setAvatar', data.avatar);
+            commit('setName', data.name);
             commit('setUserName', data.username);
             commit('setUserId', data.id);
+            commit('setCreateTime', parseTime(data.create_time));
             resolve(res.data)
           })
         } catch (error) {

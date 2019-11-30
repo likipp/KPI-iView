@@ -43,3 +43,12 @@ export function uerInfo (params) {
     params
   })
 }
+
+export function updateUserCenter (id, data) {
+  // return axios.patch(`/api/center/${id}/user-center/`)
+  return axios({
+    url: `/api/users/${id}/edit-user-center/`,
+    method: 'patch',
+    data
+  })
+}
