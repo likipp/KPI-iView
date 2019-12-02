@@ -22,7 +22,6 @@
   </div>
 </template>
 <script>
-// import { getRoleList } from '../../../api/personnel/role';
 
 export default {
   name: 'table-expand',

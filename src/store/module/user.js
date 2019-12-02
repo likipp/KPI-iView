@@ -3,7 +3,7 @@ import { setToken, getToken } from '@/libs/util'
 import Cookies from 'js-cookie'
 import { uerInfo } from '../../api/personnel/user'
 import { setStore } from '../../libs/storage';
-import { parseTime } from '../../libs/times';
+// import { parseTime } from '../../libs/times';
 
 // import { backendMenusToRouters } from '../../libs/util'
 // import router from '../../router'
@@ -130,7 +130,8 @@ export default {
             commit('setName', data.name);
             commit('setUserName', data.username);
             commit('setUserId', data.id);
-            commit('setCreateTime', parseTime(data.create_time));
+            // commit('setCreateTime', parseTime(data.create_time));
+            commit('setCreateTime', data.create_time);
             resolve(res.data)
           })
         } catch (error) {
