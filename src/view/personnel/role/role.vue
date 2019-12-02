@@ -19,7 +19,7 @@
     </Row>
     <Row>
       <Table :data="roleData" :columns="columns" :loading="loading" border stripe ref="table"
-        @on-selection-change="changeSelect"
+        @on-selection-change="changeSelect" @on-expand="expand"
       ></Table>
     </Row>
     <Row type="flex" justify="end" class="page">
@@ -79,9 +79,11 @@ import { getRoleList, createRole, updateRole, deleteRole } from '@/api/personnel
 import { getMenuList } from '@/api/personnel/menu';
 import { getPermissionTree } from '../../../api/personnel/permission';
 import { Poptip, Button } from 'view-design';
+import expandRow from './table-expand'
 
 export default {
   name: 'role',
+  components: { expandRow },
   data () {
     return {
       menuTitle: '',
@@ -113,6 +115,18 @@ export default {
       editPermissionList: {},
       permissons: [],
       columns: [
+        {
+          type: 'expand',
+          width: 50,
+          render: (h, params) => {
+            return h(expandRow, {
+              props: {
+                row: params.row,
+                button: this.permissionList
+              }
+            })
+          }
+        },
         {
           type: 'selection',
           width: 60,
@@ -507,6 +521,7 @@ export default {
     },
     editButton (value) {
       let roleButton = value.permissions;
+      console.log(roleButton, 'role')
       this.checkMenuTree(this.permissionList, roleButton);
       this.permissionModal = true;
       this.permissionTitle = `按钮分配--${value.name}`;
@@ -618,6 +633,10 @@ export default {
           this.permissionList = res.data
         }
       )
+    },
+    expand (val) {
+      // console.log(val, 6666)
+      // console.log(this.permissionList, 77777)
     }
   },
   created () {

@@ -27,7 +27,8 @@
                   <Input style="width: 250px" v-model="userForm.name"/>
                 </FormItem>
                 <FormItem label="加入时间" prop="create_time">
-                  <span>{{ userForm.create_time }}</span>
+<!--                  <span>{{ userForm.create_time }}</span>-->
+                  <span>{{ userForm.create_time | dataFormat }}</span>
                 </FormItem>
                 <FormItem label="个人简介：" prop="description">
                   <Input
