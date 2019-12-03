@@ -10,6 +10,14 @@ export function getRoleList (params) {
   })
 }
 
+export function getRoleTree (params) {
+  return axios({
+    url: '/api/role/tree/',
+    method: 'get',
+    params
+  })
+}
+
 export function createRole (params) {
   return axios.post(role, params)
 }

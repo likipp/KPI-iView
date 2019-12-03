@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import { getRoleList, createRole, updateRole, deleteRole } from '@/api/personnel/role';
+import { createRole, updateRole, deleteRole, getRoleTree } from '@/api/personnel/role';
 import { getMenuList } from '@/api/personnel/menu';
 import { getPermissionTree } from '../../../api/personnel/permission';
 import { Poptip, Button } from 'view-design';
@@ -401,28 +401,33 @@ export default {
   },
   methods: {
     handleGetRoleList () {
-      if (this.curPage >= this.getParams.page) {
-        if (this.loading) return;
-        this.loading = true;
-        getRoleList(this.getParams).then(
-          res => {
-            this.roleData = res.data.results;
-            this.total = res.data.count;
-            this.loading = false;
-          }
-        )
-      } else {
-        if (this.loading) return;
-        this.loading = true;
-        this.getParams.page = 1;
-        getRoleList(this.getParams).then(
-          res => {
-            this.roleData = res.data.results;
-            this.total = res.data.count;
-            this.loading = false;
-          }
-        )
-      }
+      // if (this.curPage >= this.getParams.page) {
+      //   if (this.loading) return;
+      //   this.loading = true;
+      //   getRoleList(this.getParams).then(
+      //     res => {
+      //       this.roleData = res.data.results;
+      //       this.total = res.data.count;
+      //       this.loading = false;
+      //     }
+      //   )
+      // } else {
+      //   if (this.loading) return;
+      //   this.loading = true;
+      //   this.getParams.page = 1;
+      //   getRoleList(this.getParams).then(
+      //     res => {
+      //       this.roleData = res.data.results;
+      //       this.total = res.data.count;
+      //       this.loading = false;
+      //     }
+      //   )
+      // }
+      getRoleTree().then(
+        res => {
+          this.roleData = res.data
+        }
+      )
     },
     init () {
       this.handleGetRoleList();

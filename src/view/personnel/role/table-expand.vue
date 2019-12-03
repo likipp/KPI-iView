@@ -1,14 +1,15 @@
 <template>
   <div>
-    <Row :class="['expand-row', 'v-center', 'bd-bottom', i1 === 0 ? 'bd-top' : '']" v-for="(item, i1) in button" :key="item.id">
+    {{ row }}
+    <Row :class="['expand-row', 'v-center', 'bd-bottom', i1 === 0 ? 'bd-top' : '']" v-for="(item, i1) in row.permissions" :key="item.id">
       <Col :span="6">
-        <Tag size="medium" color="geekblue" type="border">{{ item.name }}</Tag>
+        <Tag size="medium" color="geekblue" type="border">{{ item.label }}</Tag>
         <Icon type="md-arrow-dropright" />
       </Col>
       <Col :span="18">
         <Row v-for="(item2, i2) in item.children" :key="item2.id" :class="['v-center', i2 === 0 ? '' : 'bd-top']">
           <Col :span="6">
-            <Tag size="medium" color="volcano" type="border">{{ item2.name }}</Tag>
+            <Tag size="medium" color="volcano" type="border">{{ item2 }}</Tag>
             <Icon type="md-arrow-dropright" />
           </Col>
           <Col :span="18">
