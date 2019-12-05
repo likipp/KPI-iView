@@ -33,3 +33,18 @@ export function updateRole (id, data) {
 export function deleteRole (id, data) {
   return axios.delete(`/api/roles/${id}/`)
 }
+
+export function updateRolePermission (id, data) {
+  return axios({
+    url: `/api/roles/${id}/delete-role-permission/`,
+    method: 'patch',
+    data
+  })
+}
+
+export function getRoleSingle (id) {
+  return axios({
+    url: `/api/role_permission/${id}/`,
+    method: 'get'
+  })
+}

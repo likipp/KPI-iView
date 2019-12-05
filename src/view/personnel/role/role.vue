@@ -23,10 +23,10 @@
       ></Table>
     </Row>
     <Row type="flex" justify="end" class="page">
-      <Page :page-size="getParams.page_size" :total="total" size="small" show-total show-sizer show-elevator
-            :page-size-opts="[2,10,20,50]" :current="getParams.page"
-            @on-change="changePage" @on-page-size-change="changePageSize"
-      ></Page>
+<!--      <Page :page-size="getParams.page_size" :total="total" size="small" show-total show-sizer show-elevator-->
+<!--            :page-size-opts="[2,10,20,50]" :current="getParams.page"-->
+<!--            @on-change="changePage" @on-page-size-change="changePageSize"-->
+<!--      ></Page>-->
     </Row>
   </Card>
   <Modal v-model="roleModal" :title="type === 'create' ? '增加角色' : '编辑角色'" draggable
@@ -80,6 +80,7 @@ import { getMenuList } from '@/api/personnel/menu';
 import { getPermissionTree } from '../../../api/personnel/permission';
 import { Poptip, Button } from 'view-design';
 import expandRow from './table-expand'
+import { getRoleSingle } from '../../../api/personnel/role';
 
 export default {
   name: 'role',
@@ -95,6 +96,7 @@ export default {
       type: 'create',
       editIndex: -1,
       total: 0,
+      roleListLasts: null,
       getParams: {
         page: 1,
         page_size: 2,
@@ -121,8 +123,10 @@ export default {
           render: (h, params) => {
             return h(expandRow, {
               props: {
+                // row: this.roleListLasts,
                 row: params.row,
-                button: this.permissionList
+                button: this.permissionList,
+                handleGetRoleList: this.handleGetRoleList
               }
             })
           }
@@ -227,6 +231,7 @@ export default {
                       this.editId['id'] = params.row.id;
                       this.editId['name'] = params.row.name;
                       // this.nodes = this.$refs.tree.getCheckedNodes()
+                      // console.log(this.nodes, 565664)
                     }
                   }
                 }, '菜单权限'
@@ -247,7 +252,8 @@ export default {
                       this.editButton(params.row);
                       this.editPermissionId['id'] = params.row.id;
                       this.editPermissionId['name'] = params.row.name;
-                      // this.buttonNodes = this.$refs.permissionTree.getCheckedNodes()
+                      this.buttonNodes = this.$refs.permissionTree.getCheckedNodes()
+                      // this.nodes = this.$refs.tree.getCheckedNodes()
                     }
                   }
                 }, '按钮权限'
@@ -526,7 +532,6 @@ export default {
     },
     editButton (value) {
       let roleButton = value.permissions;
-      console.log(roleButton, 'role')
       this.checkMenuTree(this.permissionList, roleButton);
       this.permissionModal = true;
       this.permissionTitle = `按钮分配--${value.name}`;
@@ -591,7 +596,7 @@ export default {
     hasPerm (p, roleMenus) {
       let flag = false;
       for (let i = 0; i < roleMenus.length; i++) {
-        if (p.id === roleMenus[i]) {
+        if (p.id === roleMenus[i].id) {
           flag = true;
           break;
         }
@@ -640,8 +645,14 @@ export default {
       )
     },
     expand (val) {
-      // console.log(val, 6666)
       // console.log(this.permissionList, 77777)
+      console.log(777777)
+      getRoleSingle(val.id).then(
+        res => {
+          this.roleListLasts = res.data
+          console.log(this.roleListLasts, 222222)
+        }
+      )
     }
   },
   created () {
