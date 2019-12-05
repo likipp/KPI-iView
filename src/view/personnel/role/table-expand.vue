@@ -12,7 +12,7 @@
             <Icon type="md-arrow-dropright" />
           </Col>
           <Col :span="18">
-            <Tag size="medium" type="border" color="magenta" closable @on-close="handleRemoveTag(row.id, item3)"
+            <Tag size="medium" type="border" color="magenta" closable @on-close="handleRemoveTag(row, item3)"
                  v-for="item3 in item2.children" :key="item3.id">
               {{ item3.name }}
             </Tag>
@@ -31,7 +31,7 @@ export default {
   props: {
     row: Object,
     button: Array,
-    handleGetRoleList: {
+    expand: {
       type: Function,
       default: null
     }
@@ -41,15 +41,13 @@ export default {
     }
   },
   methods: {
-    handleRemoveTag (roleId, tag) {
-      updateRolePermission(roleId, tag).then(
+    handleRemoveTag (row, tag) {
+      updateRolePermission(row.id, tag).then(
         res => {
-          console.log(res);
           this.$Message.success({ background: true, content: '删除成功', duration: 3 });
-          // if (this.handleGetRoleList) {
-          //   this.handleGetRoleList()
-          // }
-          res.data = row.permissions
+          if (this.expand) {
+            this.expand(row)
+          }
         }
       )
     }

@@ -123,10 +123,11 @@ export default {
           render: (h, params) => {
             return h(expandRow, {
               props: {
-                // row: this.roleListLasts,
-                row: params.row,
+                row: this.roleListLasts,
+                // row: params.row,
                 button: this.permissionList,
-                handleGetRoleList: this.handleGetRoleList
+                handleGetRoleList: this.handleGetRoleList,
+                expand: this.expand
               }
             })
           }
@@ -536,33 +537,6 @@ export default {
       this.permissionModal = true;
       this.permissionTitle = `按钮分配--${value.name}`;
     },
-    // checkButtonTree (permData, roleButton) {
-    //   let that = this;
-    //   permData.forEach(function (p) {
-    //     if (that.hasButton(p, roleButton)) {
-    //       if (p.pid === null) {
-    //         p.selected = true
-    //       } else {
-    //         that.$set(p, 'checked', true)
-    //       }
-    //     } else {
-    //       that.$set(p, 'checked', false)
-    //     }
-    //     if (p.children) {
-    //       that.checkButtonTree(p.children, roleButton)
-    //     }
-    //   })
-    // },
-    // hasButton (p, roleButton) {
-    //   let flag = false;
-    //   for (let i = 0; i < roleButton.length; i++) {
-    //     if (p.id === roleButton[i]) {
-    //       flag = true;
-    //       break
-    //     }
-    //   }
-    //   return flag;
-    // },
     handleUpdateButton () {
       updateRole(this.editPermissionId['id'], this.editPermissionList).then(
         res => {
@@ -645,12 +619,10 @@ export default {
       )
     },
     expand (val) {
-      // console.log(this.permissionList, 77777)
-      console.log(777777)
-      getRoleSingle(val.id).then(
+      const roleId = val.id
+      getRoleSingle(roleId).then(
         res => {
           this.roleListLasts = res.data
-          console.log(this.roleListLasts, 222222)
         }
       )
     }
