@@ -48,3 +48,11 @@ export function getRoleSingle (id) {
     method: 'get'
   })
 }
+
+export function getSelectPermissions (id, params) {
+  return axios({
+    url: `/api/role_permission/${id}/get-permission/`,
+    method: 'get',
+    params
+  })
+}

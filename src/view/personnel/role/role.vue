@@ -121,15 +121,19 @@ export default {
           type: 'expand',
           width: 50,
           render: (h, params) => {
-            return h(expandRow, {
-              props: {
-                row: this.roleListLasts,
-                // row: params.row,
-                button: this.permissionList,
-                handleGetRoleList: this.handleGetRoleList,
-                expand: this.expand
-              }
-            })
+            if (this.roleListLasts) {
+              return h(expandRow, {
+                props: {
+                  row: this.roleListLasts,
+                  // row: params.row,
+                  button: this.permissionList,
+                  handleGetRoleList: this.handleGetRoleList,
+                  expand: this.expand
+                }
+              })
+            } else {
+              return h('span', '数据未获取成功')
+            }
           }
         },
         {
@@ -232,7 +236,6 @@ export default {
                       this.editId['id'] = params.row.id;
                       this.editId['name'] = params.row.name;
                       // this.nodes = this.$refs.tree.getCheckedNodes()
-                      // console.log(this.nodes, 565664)
                     }
                   }
                 }, '菜单权限'
@@ -619,7 +622,7 @@ export default {
       )
     },
     expand (val) {
-      const roleId = val.id
+      const roleId = val.id;
       getRoleSingle(roleId).then(
         res => {
           this.roleListLasts = res.data
