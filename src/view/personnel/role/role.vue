@@ -650,3 +650,9 @@ export default {
   }
 }
 </script>
+
+<style lang="less" scoped>
+  /*/deep/ .ivu-table-expanded-cell {*/
+  /*  background: indianred;*/
+  /*}*/
+</style>

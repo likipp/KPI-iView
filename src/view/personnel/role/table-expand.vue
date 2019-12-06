@@ -12,7 +12,7 @@
             <Icon type="md-arrow-dropright" />
           </Col>
           <Col :span="18">
-            <Tag size="medium" type="border" color="magenta" closable @on-close="handleOpenPoptip(row, item3)"
+            <Tag size="medium" type="border" color="magenta" closable @on-close="handleCloseTag(row, item3)"
                  v-for="item3 in item2.children" :key="item3.id" :name="item3.name">
               <Poptip
                 confirm
@@ -24,9 +24,10 @@
                 {{ item3.name }}
             </Tag>
             <Button icon="ios-add" type="dashed" size="small" >添加标签</Button>
-            <Select size="small" multiple style="width:110px" placeholder="添加标签"
-                    @on-open-change="handleOpenSelect(row.id, item.id, item2.id)">
-<!--              <Option  v-for="item in selectData" :value="item.name" :key="item.id"></Option>-->
+            <Select size="small" multiple style="width:120px" placeholder="添加标签" transfer
+                    @on-open-change="handleOpenSelect(row.id, item.id, item2)" @on-change="handleTagSelect"
+                    not-found-text="无可用权限">
+              <Option  v-for="item in selectData" :value="item.id" :key="item.id" v-if="selectData.length > 0">{{ item.name }}</Option>
             </Select>
           </Col>
         </Row>
@@ -61,7 +62,9 @@ export default {
         permission: ''
       },
       selectData: [],
-      permissionList: []
+      hasPermission: [],
+      permissionList: [],
+      unHasPermission: []
     }
   },
   methods: {
@@ -83,13 +86,13 @@ export default {
     cancel (item) {
       this.$Message.success({ background: true, content: `取消删除${item.name}`, duration: 3 });
     },
-    handleOpenPoptip (row, item3) {
+    handleCloseTag (row, item3) {
       this.tagName = item3.name;
-      this.tagModal = true
-      console.log(this.tagName)
+      this.tagModal = true;
+      // this.hasPermission = item2
+      // console.log(this.hasPermission, 'HASPERMISSION')
     },
-    handleOpenSelect (roleId, menuId, permissionId) {
-      console.log(roleId, menuId, permissionId)
+    handleOpenSelect (roleId, menuId, permission) {
       // let data = {};
       // data['roleId'] = roleId;
       // data['menuId'] = menuId;
@@ -106,22 +109,38 @@ export default {
       // ).catch(error => {
       //   console.log(error)
       // })
+      let permissionId = permission.id;
+      this.hasPermission = permission['children']
       getPermissionTree().then(
         res => {
           // console.log(res.data, 55555)
           for (let i = 0; i < res.data.length; i++) {
-            if (res.data[i]['id'] === roleId) {
+            if (res.data[i]['id'] === menuId) {
               for (let y = 0; y < res.data[i]['children'].length; y++) {
-                console.log(res.data[i]['children'][y]['id'], menuId)
                 if (res.data[i]['children'][y]['id'] === permissionId) {
-                  console.log(res.data[i]['children'][y]['children'])
+                  this.permissionList = res.data[i]['children'][y]['children']
                 }
-                // console.log(res.data[i]['children'][y]['id'])
               }
             }
           }
+          if (!this.permissionList) {
+            this.selectData = {}
+          } else {
+            for (let i = 0; i < this.permissionList.length; i++) {
+              for (let y = 0; y < this.hasPermission.length; y++) {
+                if (this.permissionList[i]['id'] === this.hasPermission[y]['id']) {
+                  this.permissionList.splice(i, 1)
+                }
+              }
+            }
+            this.selectData = {};
+            this.selectData = this.permissionList
+          }
         }
       )
+    },
+    handleTagSelect (val) {
+      console.log(val, 77777)
     }
   },
   watch: {
@@ -135,7 +154,7 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .ivu-tag{
   margin: 7px
 }
@@ -148,5 +167,11 @@ export default {
 .v-center {
   display: flex;
   align-items: center
+}
+/*/deep/ .ivu-table-expanded-cell {*/
+/*  background: indianred;*/
+/*}*/
+.td {
+  /deep/ .ivu-table-expanded-cell {background: indianred}
 }
 </style>
