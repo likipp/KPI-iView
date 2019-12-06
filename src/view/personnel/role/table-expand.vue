@@ -24,9 +24,9 @@
                 {{ item3.name }}
             </Tag>
             <Button icon="ios-add" type="dashed" size="small" >添加标签</Button>
-            <Select size="small" multiple style="width:110px" placeholder="添加标签" v-model="permissionList"
+            <Select size="small" multiple style="width:110px" placeholder="添加标签"
                     @on-open-change="handleOpenSelect(row.id, item.id, item2.id)">
-              <Option  v-for="item in selectData" :value="item.name" :key="item.id"></Option>
+<!--              <Option  v-for="item in selectData" :value="item.name" :key="item.id"></Option>-->
             </Select>
           </Col>
         </Row>
@@ -35,7 +35,8 @@
   </div>
 </template>
 <script>
-import { updateRolePermission, getSelectPermissions } from '../../../api/personnel/role';
+import { updateRolePermission } from '../../../api/personnel/role';
+import { getPermissionTree } from '../../../api/personnel/permission'
 
 export default {
   name: 'table-expand',
@@ -93,18 +94,34 @@ export default {
       // data['roleId'] = roleId;
       // data['menuId'] = menuId;
       // data['permissionId'] = permissionId;
-      this.selectForm.roleId = roleId;
-      this.selectForm.menuId = menuId;
-      this.selectForm.permissionId = permissionId;
-      console.log(this.selectForm, 222222)
-      getSelectPermissions(roleId, this.selectForm).then(
+      // this.selectForm.roleId = roleId;
+      // this.selectForm.menuId = menuId;
+      // this.selectForm.permissionId = permissionId;
+      // console.log(this.selectForm, 222222)
+      // getSelectPermissions(roleId, this.selectForm).then(
+      //   res => {
+      //     console.log(res, 5555)
+      //     this.selectData = res.data
+      //   }
+      // ).catch(error => {
+      //   console.log(error)
+      // })
+      getPermissionTree().then(
         res => {
-          console.log(res, 5555)
-          this.selectData = res.data
+          // console.log(res.data, 55555)
+          for (let i = 0; i < res.data.length; i++) {
+            if (res.data[i]['id'] === roleId) {
+              for (let y = 0; y < res.data[i]['children'].length; y++) {
+                console.log(res.data[i]['children'][y]['id'], menuId)
+                if (res.data[i]['children'][y]['id'] === permissionId) {
+                  console.log(res.data[i]['children'][y]['children'])
+                }
+                // console.log(res.data[i]['children'][y]['id'])
+              }
+            }
+          }
         }
-      ).catch(error => {
-        console.log(error)
-      })
+      )
     }
   },
   watch: {
