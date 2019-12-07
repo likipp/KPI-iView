@@ -622,12 +622,27 @@ export default {
       )
     },
     expand (val) {
-      const roleId = val.id;
-      getRoleSingle(roleId).then(
-        res => {
-          this.roleListLasts = res.data
-        }
-      )
+      // console.log(val, 6666)
+      // const roleId = val.id;
+      // getRoleSingle(roleId).then(
+      //   res => {
+      //     this.roleListLasts = res.data
+      //   }
+      // )
+      if (!val.name) {
+        getRoleSingle(val).then(
+          res => {
+            this.roleListLasts = res.data
+          }
+        )
+      } else {
+        const roleId = val.id;
+        getRoleSingle(roleId).then(
+          res => {
+            this.roleListLasts = res.data
+          }
+        )
+      }
     }
   },
   created () {

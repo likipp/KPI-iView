@@ -23,8 +23,8 @@
               <Poptip v-else transfer></Poptip>
                 {{ item3.name }}
             </Tag>
-            <Button icon="ios-add" type="dashed" size="small" >添加标签</Button>
-            <Select size="small" multiple style="width:120px" placeholder="添加标签" transfer
+<!--            <Button icon="ios-add" type="dashed" size="small" >添加标签</Button>-->
+            <Select size="small" multiple style="width:120px" placeholder="添加标签" transfer ref="resetSelect"
                     @on-open-change="handleOpenSelect(row.id, item.id, item2)" @on-change="handleTagSelect"
                     not-found-text="无可用权限">
               <Option  v-for="item in selectData" :value="item.id" :key="item.id" v-if="selectData.length > 0">{{ item.name }}</Option>
@@ -36,7 +36,7 @@
   </div>
 </template>
 <script>
-import { updateRolePermission } from '../../../api/personnel/role';
+import { updateRolePermission, addPermissionToRole } from '../../../api/personnel/role';
 import { getPermissionTree } from '../../../api/personnel/permission'
 
 export default {
@@ -56,21 +56,15 @@ export default {
       tagName: '',
       allPermissions: [],
       selectLoading: true,
-      selectForm: {
-        roleId: '',
-        menuId: '',
-        permission: ''
-      },
       selectData: [],
       hasPermission: [],
       permissionList: [],
-      unHasPermission: []
+      unHasPermission: [],
+      roleId: 0,
+      newVal: []
     }
   },
   methods: {
-    handleRemoveTag (row, tag) {
-      //
-    },
     ok (row, tag) {
       updateRolePermission(row.id, tag).then(
         res => {
@@ -89,31 +83,13 @@ export default {
     handleCloseTag (row, item3) {
       this.tagName = item3.name;
       this.tagModal = true;
-      // this.hasPermission = item2
-      // console.log(this.hasPermission, 'HASPERMISSION')
     },
     handleOpenSelect (roleId, menuId, permission) {
-      // let data = {};
-      // data['roleId'] = roleId;
-      // data['menuId'] = menuId;
-      // data['permissionId'] = permissionId;
-      // this.selectForm.roleId = roleId;
-      // this.selectForm.menuId = menuId;
-      // this.selectForm.permissionId = permissionId;
-      // console.log(this.selectForm, 222222)
-      // getSelectPermissions(roleId, this.selectForm).then(
-      //   res => {
-      //     console.log(res, 5555)
-      //     this.selectData = res.data
-      //   }
-      // ).catch(error => {
-      //   console.log(error)
-      // })
+      this.roleId = roleId;
       let permissionId = permission.id;
       this.hasPermission = permission['children']
       getPermissionTree().then(
         res => {
-          // console.log(res.data, 55555)
           for (let i = 0; i < res.data.length; i++) {
             if (res.data[i]['id'] === menuId) {
               for (let y = 0; y < res.data[i]['children'].length; y++) {
@@ -140,12 +116,21 @@ export default {
       )
     },
     handleTagSelect (val) {
-      console.log(val, 77777)
+      let data = {};
+      data['id'] = val;
+      addPermissionToRole(this.roleId, data).then(
+        res => {
+          this.$Message.success({ background: true, content: '权限添加成功', duration: 3 });
+          if (this.expand) {
+            this.expand(this.roleId)
+          }
+        }
+      )
     }
   },
   watch: {
-    allPermissions: function () {
-      //
+    row: function (newVal, oldVal) {
+      console.log(newVal, oldVal, 777777999)
     }
   },
   created () {

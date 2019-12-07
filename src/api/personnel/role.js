@@ -42,6 +42,14 @@ export function updateRolePermission (id, data) {
   })
 }
 
+export function addPermissionToRole (id, data) {
+  return axios({
+    url: `/api/roles/${id}/add-role-permission/`,
+    method: 'patch',
+    data
+  })
+}
+
 export function getRoleSingle (id) {
   return axios({
     url: `/api/role_permission/${id}/`,
