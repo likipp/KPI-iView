@@ -1,0 +1,281 @@
+<style lang="less">
+  @import '../../styles/table-common';
+</style>
+<template>
+  <div>
+    <Card>
+      <div class="search">
+        <Row style="padding-bottom: 10px" operation>
+          <Button style="margin-right: 8px">
+            <Icon type="ios-trash-outline" size="15" style="margin-bottom: 3px"></Icon>删除
+          </Button>
+          <Input placeholder="搜索" style="width: auto; margin-left: 5px" clearable></Input>
+          <Button @click="groupKPIModal = true" type="primary" style="float: right">
+            <Icon type="ios-add" size="15" style="margin-bottom: 3px"></Icon>新增KPI
+          </Button>
+        </Row>
+        <Row>
+          <Col span="24">
+            <Table strip border :columns="columns" :data="groupKPIList" :loading="loading"></Table>
+          </Col>
+        </Row>
+        <Row type="flex" justify="end" class="page">
+          <Page :total="total" show-sizer show-elevator size="small" :current.sync="getParams.page" show-total
+                 :page-size=1
+                :page-size-opts="[1,10,20,50]"></Page>
+        </Row>
+      </div>
+    </Card>
+    <Modal v-model="groupKPIModal" width="800" :title="type === 'create' ? '增加部门KPI' : '修改部门KPI'" draggable scrollable>
+      <Form ref="groupKPIForm" :model="groupKPIForm" :label-width="100" :rules="ruleForm" label-colon>
+        <Row>
+          <Col span="11">
+            <FormItem label="部门" prop="dep">
+              <Select v-model="groupKPIForm.dep" clearable>
+                <Option v-for="dep in depList" :value="dep.id" :key="dep.id">{{ dep.name }}</Option>
+              </Select>
+            </FormItem>
+          </Col>
+          <Col span="10">
+            <FormItem label="状态" prop="status">
+              <Select v-model="groupKPIForm.status">
+                <Option value="unused">未使用</Option>
+                <Option value="using">使用中</Option>
+                <Option value="disabled">禁用</Option>
+              </Select>
+            </FormItem>
+          </Col>
+        </Row>
+        <Row>
+          <Col span="8">
+            <FormItem label="上限值" prop="u_limit">
+              <Input v-model="groupKPIForm.u_limit"></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="下限值" prop="l_limit">
+              <Input v-model="groupKPIForm.l_limit"></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="目标值" prop="t_value">
+              <Input v-model="groupKPIForm.t_value"></Input>
+            </FormItem>
+          </Col>
+        </Row>
+        <Row>
+          <Col span="24">
+            <FormItem label="部门指标" prop="kpi">
+              <Transfer :data="kpiList" :target-keys="targetKeys" :list-style="listStyle" v-model="groupKPIForm.kpi"
+                        :operations="['删除', '添加']" :title="title" filterable :filter-method="filterMethod"></Transfer>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+    </Modal>
+  </div>
+</template>
+
+<script>
+import { getGroupKPIList } from '../../api/kpi/kpigroup';
+import { getDepList } from '../../api/personnel/department';
+import { getKPIList } from '../../api/kpi/kpibase';
+
+export default {
+  name: 'kpi-group',
+  data () {
+    return {
+      loading: false,
+      type: 'create',
+      groupKPIList: [],
+      total: 1,
+      getParams: {
+        page: 1,
+        page_size: 10,
+        search: ''
+      },
+      groupKPIModal: false,
+      depList: [],
+      kpiList: [],
+      targetKeys: [],
+      listStyle: {
+        width: '250px',
+        height: '300px'
+      },
+      title: ['可选', '已选'],
+      groupKPIForm: {
+        kpi: '',
+        dep: '',
+        u_limit: 0,
+        l_limit: 0,
+        t_value: 0,
+        status: ''
+      },
+      ruleForm: {
+        dep: [{ required: true, message: '部门必须选择', trigger: 'change' }],
+        status: [{ required: true, message: '状态必须选择', trigger: 'change' }],
+        u_limit: [{ required: true, message: '上限值必须输入', trigger: 'blur' }],
+        l_limit: [{ required: true, message: '下限值必须输入', trigger: 'blur' }],
+        t_value: [{ required: true, message: '目标值必须输入', trigger: 'blur' }],
+        kpi: [{ required: true, message: 'KPI必须选择', trigger: 'change' }]
+      },
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          align: 'center',
+          key: 'id',
+          width: '80px',
+          sortable: true,
+          indexMethod: (row) => {
+            return (row._index + 1) + (this.getParams.page * this.getParams.page_size) - this.getParams.page_size
+          }
+        },
+        {
+          title: '部门',
+          align: 'center',
+          render: (h, params) => {
+            return h('span', {}, params.row.dep.name)
+          }
+        },
+        {
+          title: 'KPI',
+          align: 'center',
+          render: (h, params) => {
+            return h('span', {}, params.row.kpi.name)
+          }
+        },
+        {
+          title: '上限值',
+          align: 'center',
+          width: '80',
+          render: (h, params) => {
+            return h('span', {}, params.row.u_limit)
+          }
+        },
+        {
+          title: '下限值',
+          align: 'center',
+          width: '80',
+          render: (h, params) => {
+            return h('span', {}, params.row.l_limit)
+          }
+        },
+        {
+          title: '目标值',
+          align: 'center',
+          width: '80',
+          render: (h, params) => {
+            return h('span', {}, params.row.t_value)
+          }
+        },
+        {
+          title: '状态',
+          align: 'center',
+          width: '140',
+          render: (h, params) => {
+            const row = params.row;
+            if (row.status.id === 'using') {
+              const color = 'success';
+              const text = '使用中';
+              return h('Tag', {
+                props: {
+                  type: 'dot',
+                  color: color
+                }
+              }, text)
+            } else if (row.status.id === 'unused') {
+              const color = 'warning';
+              const text = '未使用';
+              return h('Tag', {
+                props: {
+                  type: 'dot',
+                  color: color
+                }
+              }, text)
+            } else {
+              const color = 'error';
+              const text = '禁用';
+              return h('Tag', {
+                props: {
+                  type: 'dot',
+                  color: color
+                }
+              }, text)
+            }
+          }
+        }
+      ]
+    }
+  },
+  methods: {
+    kpiFormat (kpiList) {
+      let kpis = [];
+      kpiList.map((item) => {
+        kpis.push({
+          id: item.id - 1,
+          key: item.id,
+          label: item.name
+        })
+      });
+      this.kpiList = kpis
+    },
+    handleGetKPIGroupList () {
+      if (this.curPage >= this.getParams.page) {
+        if (this.loading) return;
+        this.loading = true;
+        getGroupKPIList(this.getParams).then(
+          res => {
+            this.groupKPIList = res.data.results;
+            this.total = res.data.count;
+            this.loading = false
+          }
+        )
+      } else {
+        if (this.loading) return;
+        this.loading = true;
+        this.getParams.page = 1;
+        getGroupKPIList(this.getParams).then(
+          res => {
+            this.groupKPIList = res.data.results;
+            this.total = res.data.count;
+            this.loading = false
+          }
+        )
+      }
+    },
+    handleGetDepList () {
+      getDepList().then(
+        res => {
+          this.depList = res.data.results;
+        }
+      )
+    },
+    handleGetKPIList () {
+      getKPIList().then(
+        res => {
+          let kpiList = res.data.results;
+          this.kpiFormat(kpiList)
+        }
+      )
+    },
+    filterMethod (data, query) {
+      return data.label.indexOf(query) > -1
+    }
+  },
+  created () {
+    this.handleGetKPIGroupList();
+    this.handleGetDepList();
+    this.handleGetKPIList()
+  },
+  computed: {
+    curPage () {
+      return Math.ceil(this.total / this.getParams.page_size)
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

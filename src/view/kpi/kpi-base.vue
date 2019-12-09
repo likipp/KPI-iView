@@ -26,8 +26,8 @@
         </Row>
       </div>
     </Card>
-    <Modal v-model="kpiModal" width="600" :title="type === 'create' ? '增加KPI' : '修改KPI'" label-colon draggable scrollable @on-cancel="cancel">
-      <Form ref="kpiForm" :model="kpiForm" :rules="ruleForm" :label-width="90">
+    <Modal v-model="kpiModal" width="600" :title="type === 'create' ? '增加KPI' : '修改KPI'" draggable scrollable @on-cancel="cancel">
+      <Form ref="kpiForm" :model="kpiForm" :rules="ruleForm" :label-width="90" label-colon>
         <Row>
           <Col span="12">
             <FormItem label="名称" prop="name">
