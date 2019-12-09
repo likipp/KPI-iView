@@ -21,7 +21,7 @@
         </Row>
         <Row type="flex" justify="end" class="page">
           <Page :total="total" show-sizer show-elevator size="small" :current.sync="getParams.page" show-total
-                @on-change="handleChange" @on-page-size-change="sizeChange"
+                @on-change="handleChange" @on-page-size-change="sizeChange" :page-size=1
                 :page-size-opts="[1,10,20,50]"></Page>
         </Row>
       </div>
