@@ -8,26 +8,26 @@ export default {
   name: 'TreeTable__body',
   mixins: [mixins],
   components: { Radio },
-  data() {
+  data () {
     return {
-      radioSelectedIndex: -1,
+      radioSelectedIndex: -1
     };
   },
   computed: {
-    table() {
+    table () {
       return this.$parent;
-    },
+    }
   },
   methods: {
-    toggleStatus(type, row, rowIndex, value) {
+    toggleStatus (type, row, rowIndex, value) {
       this.validateType(type, ['Expanded', 'Checked', 'Hide', 'Fold'], 'toggleStatus', false);
       const target = this.table.bodyData[rowIndex];
       this.table.bodyData.splice(rowIndex, 1, {
         ...target,
-        [`_is${type}`]: typeof value === 'undefined' ? !row[`_is${type}`] : value,
+        [`_is${type}`]: typeof value === 'undefined' ? !row[`_is${type}`] : value
       });
     },
-    getChildrenIndex(parentLevel, parentIndex, careFold = true) {
+    getChildrenIndex (parentLevel, parentIndex, careFold = true) {
       const data = this.table.bodyData;
       let childrenIndex = [];
       for (let i = parentIndex + 1; i < data.length; i++) {
@@ -51,7 +51,7 @@ export default {
       }
       return childrenIndex;
     },
-    handleEvent($event, type, data, others) {
+    handleEvent ($event, type, data, others) {
       const certainType = this.validateType(type, ['cell', 'row', 'checkbox', 'icon', 'radio'], 'handleEvent');
       const eventType = $event ? $event.type : '';
       const { row, rowIndex, column, columnIndex } = data;
@@ -96,7 +96,7 @@ export default {
         const target = latestData[rowIndex];
         latestData.splice(rowIndex, 1, {
           ...target,
-          _isHover: hover,
+          _isHover: hover
         });
       }
       if (certainType.row && others && others.clickRow && certainType.radio) {
@@ -107,9 +107,9 @@ export default {
         return this.table.$emit(`${type}-${eventType}`, latestData[rowIndex], rowIndex, column, columnIndex, $event);
       }
       return this.table.$emit(`${type}-${eventType}`, latestData[rowIndex], rowIndex, $event);
-    },
+    }
   },
-  render() {
+  render () {
     // key
     // function getKey(row, rowIndex) {
     //   const rowKey = this.table.rowKey;
@@ -120,25 +120,27 @@ export default {
     // }
 
     // style
-    function getStyle(type, row, rowIndex, column, columnIndex) {
+    function getStyle (type, row, rowIndex, column, columnIndex) {
       const certainType = this.validateType(type, ['cell', 'row'], 'getStyle');
       const style = this.table[`${type}Style`];
       if (typeof style === 'function') {
         if (certainType.row) {
-          return style.call(null, row, rowIndex);
+          // return style.call(null, row, rowIndex);
+          return style;
         }
         if (certainType.cell) {
-          return style.call(null, row, rowIndex, column, columnIndex);
+          // return style.call(null, row, rowIndex, column, columnIndex);
+          return style;
         }
       }
       return style;
     }
 
     // className
-    function getClassName(type, row, rowIndex, column, columnIndex) {
+    function getClassName (type, row, rowIndex, column, columnIndex) {
       const certainType = this.validateType(type, ['cell', 'row', 'inner'], 'getClassName');
       const classList = [];
-      if (column && column.key == "_normalIndex") {
+      if (column && column.key === '_normalIndex') {
         classList.push(`${this.prefixCls}--center-cell`);
       }
       // console.log(certainType.inner)
@@ -148,10 +150,12 @@ export default {
           classList.push(className);
         } else if (typeof className === 'function') {
           if (certainType.row) {
-            classList.push(className.call(null, row, rowIndex) || '');
+            // classList.push(className.call(null, row, rowIndex) || '');
+            classList.push(className || '');
           }
           if (certainType.cell) {
-            classList.push(className.call(null, row, rowIndex, column, columnIndex) || '');
+            // classList.push(className.call(null, row, rowIndex, column, columnIndex) || '');
+            classList.push(className || '');
           }
         }
         if (certainType.row) {
@@ -187,7 +191,7 @@ export default {
     }
 
     // 根据type渲染单元格Cell
-    function renderCell(row, rowIndex, column, columnIndex) {
+    function renderCell (row, rowIndex, column, columnIndex) {
       // ExpandType
       if (this.isExpandCell(this.table, columnIndex)) {
         return <i class='zk-icon zk-icon-angle-right'></i>;
@@ -237,7 +241,7 @@ export default {
           class={`${this.prefixCls}--level-${row._level}-cell`}
           style={{
             marginLeft: `${(row._level - 1) * 24}px`,
-            paddingLeft: row._childrenLen === 0 ? '20px' : '',
+            paddingLeft: row._childrenLen === 0 ? '20px' : ''
           }}>
           {row._childrenLen > 0 &&
             <i
@@ -310,7 +314,7 @@ export default {
                       : ''
                     }
                   </td>
-                </tr>,
+                </tr>
               ])
             : <tr
               class={`${this.prefixCls}--empty-row`}>
@@ -324,5 +328,5 @@ export default {
         </tbody>
       </table>
     );
-  },
+  }
 };

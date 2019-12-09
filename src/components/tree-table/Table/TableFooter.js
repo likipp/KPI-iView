@@ -4,22 +4,22 @@ import { mixins } from './utils';
 export default {
   name: 'TreeTable__footer',
   mixins: [mixins],
-  data() {
+  data () {
     return {
 
     };
   },
   computed: {
-    table() {
+    table () {
       return this.$parent;
-    },
+    }
   },
   methods: {
 
   },
-  render() {
+  render () {
     // 计算各列总和
-    function renderCell({ key }, columnIndex) {
+    function renderCell ({ key }, columnIndex) {
       if (columnIndex === 0) {
         return this.table.sumText;
       }
@@ -48,7 +48,7 @@ export default {
     }
 
     // className
-    function getClassName() {
+    function getClassName () {
       const classList = [];
       classList.push(`${this.prefixCls}__footer-cell`);
       if (this.table.border) {
@@ -80,5 +80,5 @@ export default {
         </tfoot>
       </table>
     );
-  },
+  }
 };
