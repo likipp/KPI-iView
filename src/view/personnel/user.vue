@@ -34,7 +34,7 @@
             </Row>
             <Row type="flex" justify="end" class="page">
               <Page show-sizer show-elevator show-total size="small" :total="total"
-                    :page-size="getParams.page_size" :current="getParams.page" :page-size-opts="[2,10,20,50]"
+                    :page-size="getParams.page_size" :current="getParams.page" :page-size-opts="[1,10,20,50]"
                     @on-page-size-change="changePageSize" @on-change="changePage"></Page>
             </Row>
           </div>
