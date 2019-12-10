@@ -33,3 +33,11 @@ export function getGroupKPIUnused (id, params) {
     params
   })
 }
+
+export function getGroupKPIEnabled (params) {
+  return axios({
+    url: '/api/kpi/enabled',
+    method: 'get',
+    params
+  })
+}

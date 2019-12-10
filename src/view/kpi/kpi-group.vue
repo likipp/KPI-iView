@@ -74,7 +74,7 @@
         <Row>
           <Col span="24">
             <FormItem label="部门指标" prop="kpi">
-              <Transfer :data="kpiList" :target-keys="targetKeys" :list-style="listStyle" v-model="targetKeys"
+              <Transfer :data="kpiList" :target-keys="targetKeys" :list-style="listStyle" v-model="this.groupKPIForm.kpi"
                         @on-change="handleCreateChange" :operations="['删除', '添加']" :title="title" filterable :filter-method="filterMethod">
               </Transfer>
             </FormItem>
@@ -93,7 +93,14 @@
 <script>
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-import { getGroupKPIList, getGroupKPIUnused, createGroupKPI } from '../../api/kpi/kpigroup';
+import {
+  getGroupKPIList,
+  getGroupKPIUnused,
+  createGroupKPI,
+  deleteGroupKPI,
+  updateGroupKPI,
+  getGroupKPIEnabled
+} from '../../api/kpi/kpigroup';
 // import { getDepList } from '../../api/personnel/department';
 import { getOrganizationTree } from '../../api/personnel/organizationtree';
 // import { contains } from '../../libs/transfer';
@@ -119,6 +126,7 @@ export default {
     };
     return {
       loading: false,
+      allKPIList: [],
       type: 'create',
       groupKPIList: [],
       total: 1,
@@ -252,6 +260,9 @@ export default {
                 on: {
                   click: () => {
                     this.type = 'edit';
+                    // const value = { 'id': params.row.dep.id, 'label': params.row.dep.name };
+                    // this.handleGetDep(value)
+                    // this.kpiList = this.allKPIList;
                     this.groupKPIModal = true;
                     this.groupKPIForm.dep = params.row.dep.id;
                     this.groupKPIForm.status = params.row.status.id;
@@ -259,49 +270,41 @@ export default {
                     this.groupKPIForm.u_limit = params.row.u_limit;
                     this.groupKPIForm.t_value = params.row.t_value;
                     this.groupKPIForm.id = params.row.id;
-                    // let kpis = params.row.kpi;
-                    // let kpis_copy = [];
-                    // kpis_copy[0] = kpis.id;
-                    // this.targetKeys = kpis_copy;
-                    // let kpiList_copy = []
-                    // let kpiList = this.kpiList
-                    // for (let i in kpiList) {
-                    //   if (contains(kpis_copy, kpiList[i].id) === false) {
-                    //     kpiList_copy.push(kpiList[i])
-                    //   }
-                    // }
-                    // this.kpiList = kpiList_copy
+                    let kpi_selected = params.row.kpi;
+                    let kpi_copy = [];
+                    kpi_copy[0] = kpi_selected.id;
+                    this.targetKeys = kpi_copy
                   }
                 },
                 style: {
                   marginRight: '12px'
                 }
               }, '修改'),
-              h('Button', {
+              h('Poptip', {
                 props: {
+                  confirm: true,
+                  transfer: true,
+                  placement: 'left-start',
+                  title: `确定要删除${params.row.kpi.name}吗?`,
                   type: 'error',
                   size: 'small',
-                  icon: 'ios-trash-outline'
+                  width: '300',
+                  vModel: true
+                },
+                on: {
+                  'on-ok': () => {
+                    this.handleDeleteDepKpi(params.row)
+                  },
+                  'on-cancel': () => {
+                    this.$Message.info({ background: true, content: '点击了取消', duration: 3, closable: true })
+                  }
                 }
               }, [
-                h('Poptip', {
+                h('Button', {
                   props: {
-                    confirm: true,
-                    transfer: true,
-                    placement: 'left-start',
-                    title: `确定要删除${params.row.kpi.name}吗?`,
                     type: 'error',
                     size: 'small',
-                    width: '300',
-                    vModel: true
-                  },
-                  on: {
-                    'on-ok': () => {
-                      // this.handleDeleteDepKpi(params.row)
-                    },
-                    'on-cancel': () => {
-                      this.$Message.info('点击了取消')
-                    }
+                    icon: 'ios-trash-outline'
                   }
                 }, '删除')
               ])
@@ -377,6 +380,7 @@ export default {
     cancel () {
       this.$Message.info({ background: true, content: '取消操作', duration: 3, closable: true });
       this.groupKPIModal = false;
+      this.type = 'create';
       this.$refs['groupKPIForm'].resetFields()
     },
     handleCreateChange (newTargetKeys) {
@@ -403,21 +407,50 @@ export default {
         }
       })
     },
-    handleUpdateDepKpi () {}
+    handleUpdateDepKpi () {
+      const { id, ...params } = this.groupKPIForm;
+      for (let value of this.targetKeys.values()) {
+        params.kpi = value
+      }
+      updateGroupKPI(id, params).then(
+        res => {
+          this.$Message.success({ background: true, content: '修改成功', duration: 3, closable: true });
+          this.groupKPIModal = false;
+          this.$refs['groupKPIForm'].resetFields();
+          this.targetKeys = [];
+          this.handleGetKPIGroupList()
+        }
+      )
+    },
+    handleDeleteDepKpi (value) {
+      const { id, ...params } = value;
+      deleteGroupKPI(id).then(
+        res => {
+          this.$Message.success({ background: true, content: `删除${params.dep.name}下的${params.kpi.name}成功`, duration: 3, closable: true })
+          this.total = this.total - 1;
+          this.handleGetKPIGroupList()
+        }
+      )
+    },
+    handleGetAllKPIList () {
+      getGroupKPIEnabled().then(
+        res => {
+          // let kpiList = res.data.results;
+          // this.kpiFormat(kpiList)
+          console.log(res, 6666)
+        }
+      )
+    }
   },
   created () {
     this.handleGetKPIGroupList();
     this.handleGetDepList();
-    this.handleGetKPIList()
+    this.handleGetKPIList();
+    this.handleGetAllKPIList()
   },
   computed: {
     curPage () {
       return Math.ceil(this.total / this.getParams.page_size)
-    },
-    submitDisabled () {
-      let disabled = false;
-      if (this.targetKeys.length === 1) disabled = true;
-      return disabled
     }
   },
   watch: {
