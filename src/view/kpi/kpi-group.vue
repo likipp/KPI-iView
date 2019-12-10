@@ -96,6 +96,7 @@ import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { getGroupKPIList, getGroupKPIUnused, createGroupKPI } from '../../api/kpi/kpigroup';
 // import { getDepList } from '../../api/personnel/department';
 import { getOrganizationTree } from '../../api/personnel/organizationtree';
+// import { contains } from '../../libs/transfer';
 // import { getKPIList } from '../../api/kpi/kpibase';
 
 export default {
@@ -235,6 +236,76 @@ export default {
                 }
               }, text)
             }
+          }
+        },
+        {
+          title: '操作',
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small',
+                  icon: 'ios-create-outline'
+                },
+                on: {
+                  click: () => {
+                    this.type = 'edit';
+                    this.groupKPIModal = true;
+                    this.groupKPIForm.dep = params.row.dep.id;
+                    this.groupKPIForm.status = params.row.status.id;
+                    this.groupKPIForm.l_limit = params.row.l_limit;
+                    this.groupKPIForm.u_limit = params.row.u_limit;
+                    this.groupKPIForm.t_value = params.row.t_value;
+                    this.groupKPIForm.id = params.row.id;
+                    // let kpis = params.row.kpi;
+                    // let kpis_copy = [];
+                    // kpis_copy[0] = kpis.id;
+                    // this.targetKeys = kpis_copy;
+                    // let kpiList_copy = []
+                    // let kpiList = this.kpiList
+                    // for (let i in kpiList) {
+                    //   if (contains(kpis_copy, kpiList[i].id) === false) {
+                    //     kpiList_copy.push(kpiList[i])
+                    //   }
+                    // }
+                    // this.kpiList = kpiList_copy
+                  }
+                },
+                style: {
+                  marginRight: '12px'
+                }
+              }, '修改'),
+              h('Button', {
+                props: {
+                  type: 'error',
+                  size: 'small',
+                  icon: 'ios-trash-outline'
+                }
+              }, [
+                h('Poptip', {
+                  props: {
+                    confirm: true,
+                    transfer: true,
+                    placement: 'left-start',
+                    title: `确定要删除${params.row.kpi.name}吗?`,
+                    type: 'error',
+                    size: 'small',
+                    width: '300',
+                    vModel: true
+                  },
+                  on: {
+                    'on-ok': () => {
+                      // this.handleDeleteDepKpi(params.row)
+                    },
+                    'on-cancel': () => {
+                      this.$Message.info('点击了取消')
+                    }
+                  }
+                }, '删除')
+              ])
+            ])
           }
         }
       ]
