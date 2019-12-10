@@ -36,32 +36,40 @@
                           :show-count="true" placeholder="请选择部门"></treeselect>
             </FormItem>
           </Col>
-          <Col span="10">
+        </Row>
+        <Row>
+          <Col span="11">
             <FormItem label="状态" prop="status">
-              <Select v-model="groupKPIForm.status">
+              <Select v-model="groupKPIForm.status" placeholder="请选择状态">
                 <Option value="unused">未使用</Option>
                 <Option value="using">使用中</Option>
                 <Option value="disabled">禁用</Option>
               </Select>
             </FormItem>
           </Col>
-        </Row>
-        <Row>
-          <Col span="8">
-            <FormItem label="上限值" prop="u_limit">
-              <Input v-model="groupKPIForm.u_limit"></Input>
-            </FormItem>
-          </Col>
-          <Col span="8">
-            <FormItem label="下限值" prop="l_limit">
-              <Input v-model="groupKPIForm.l_limit"></Input>
-            </FormItem>
-          </Col>
-          <Col span="8">
+          <Col span="11">
             <FormItem label="目标值" prop="t_value">
               <Input v-model="groupKPIForm.t_value"></Input>
             </FormItem>
           </Col>
+        </Row>
+        <Row>
+          <Col span="11">
+            <FormItem label="上限值" prop="u_limit">
+              <Input v-model="groupKPIForm.u_limit"></Input>
+            </FormItem>
+          </Col>
+          <Col span="11">
+            <FormItem label="下限值" prop="l_limit">
+              <Input v-model="groupKPIForm.l_limit"></Input>
+            </FormItem>
+          </Col>
+        </Row>
+        <Row type="flex" justify="center">
+          <Col span="22">
+            <Alert show-icon style="padding-top: 8px;padding-bottom: 8px;">
+              <template slot="desc">指标只能选择一个，请不要尝试选择多个。</template>
+          </Alert></Col>
         </Row>
         <Row>
           <Col span="24">
@@ -141,7 +149,6 @@ export default {
         u_limit: [{ required: true, message: '上限值必须输入', trigger: 'blur' }],
         l_limit: [{ required: true, message: '下限值必须输入', trigger: 'blur' }],
         t_value: [{ required: true, message: '目标值必须输入', trigger: 'blur' }],
-        // kpi: [{ required: true, message: 'KPI必须选择', trigger: 'change' }]
         kpi: [{ required: true, trigger: 'change', validator: validKPI }]
       },
       columns: [
