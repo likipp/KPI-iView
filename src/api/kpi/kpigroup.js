@@ -25,3 +25,11 @@ export function updateGroupKPI (id, data) {
 export function deleteGroupKPI (id, data) {
   return axios.delete(`/api/group_kpi/${id}/`)
 }
+
+export function getGroupKPIUnused (id, params) {
+  return axios({
+    url: `/api/kpi/${id}/unused/`,
+    method: 'get',
+    params
+  })
+}

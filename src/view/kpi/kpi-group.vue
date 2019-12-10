@@ -26,14 +26,14 @@
         </Row>
       </div>
     </Card>
-    <Modal v-model="groupKPIModal" width="800" :title="type === 'create' ? '增加部门KPI' : '修改部门KPI'" draggable scrollable>
-      <Form ref="groupKPIForm" :model="groupKPIForm" :label-width="100" :rules="ruleForm" label-colon>
+    <Modal v-model="groupKPIModal" width="800" :title="type === 'create' ? '增加部门KPI' : '修改部门KPI'"
+           draggable scrollable @on-cancel="cancel">
+      <Form ref="groupKPIForm" :model="groupKPIForm" :label-width="100" :rules="ruleGroupKPIForm" label-colon>
         <Row>
           <Col span="11">
             <FormItem label="部门" prop="dep">
-              <Select v-model="groupKPIForm.dep" clearable>
-                <Option v-for="dep in depList" :value="dep.id" :key="dep.id">{{ dep.name }}</Option>
-              </Select>
+              <treeselect v-model="groupKPIForm.dep" :options="depList" :disable-branch-nodes="true" @select="handleGetDep"
+                          :show-count="true" placeholder="请选择部门"></treeselect>
             </FormItem>
           </Col>
           <Col span="10">
@@ -66,24 +66,48 @@
         <Row>
           <Col span="24">
             <FormItem label="部门指标" prop="kpi">
-              <Transfer :data="kpiList" :target-keys="targetKeys" :list-style="listStyle" v-model="groupKPIForm.kpi"
-                        :operations="['删除', '添加']" :title="title" filterable :filter-method="filterMethod"></Transfer>
+              <Transfer :data="kpiList" :target-keys="targetKeys" :list-style="listStyle" v-model="targetKeys"
+                        @on-change="handleCreateChange" :operations="['删除', '添加']" :title="title" filterable :filter-method="filterMethod">
+              </Transfer>
             </FormItem>
           </Col>
         </Row>
       </Form>
+      <div slot="footer">
+        <Button @click="cancel">取消</Button>
+        <Button type="primary" v-if="type === 'create'" @click="handleCreateDepKpi('groupKPIForm')">确定</Button>
+        <Button type="primary" v-else @click="handleUpdateDepKpi">修改</Button>
+      </div>
     </Modal>
   </div>
 </template>
 
 <script>
-import { getGroupKPIList } from '../../api/kpi/kpigroup';
-import { getDepList } from '../../api/personnel/department';
-import { getKPIList } from '../../api/kpi/kpibase';
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+import { getGroupKPIList, getGroupKPIUnused, createGroupKPI } from '../../api/kpi/kpigroup';
+// import { getDepList } from '../../api/personnel/department';
+import { getOrganizationTree } from '../../api/personnel/organizationtree';
+// import { getKPIList } from '../../api/kpi/kpibase';
 
 export default {
   name: 'kpi-group',
+  components: { Treeselect },
   data () {
+    const validDep = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('部门必须选择'))
+      } else {
+        callback()
+      }
+    };
+    const validKPI = (rule, value, callback) => {
+      if (this.targetKeys.length === 0) {
+        callback(new Error('KPI必须选择'))
+      } else {
+        callback()
+      }
+    };
     return {
       loading: false,
       type: 'create',
@@ -105,19 +129,20 @@ export default {
       title: ['可选', '已选'],
       groupKPIForm: {
         kpi: '',
-        dep: '',
+        dep: null,
         u_limit: 0,
         l_limit: 0,
         t_value: 0,
         status: ''
       },
-      ruleForm: {
-        dep: [{ required: true, message: '部门必须选择', trigger: 'change' }],
+      ruleGroupKPIForm: {
+        dep: [{ required: true, trigger: 'change', validator: validDep }],
         status: [{ required: true, message: '状态必须选择', trigger: 'change' }],
         u_limit: [{ required: true, message: '上限值必须输入', trigger: 'blur' }],
         l_limit: [{ required: true, message: '下限值必须输入', trigger: 'blur' }],
         t_value: [{ required: true, message: '目标值必须输入', trigger: 'blur' }],
-        kpi: [{ required: true, message: 'KPI必须选择', trigger: 'change' }]
+        // kpi: [{ required: true, message: 'KPI必须选择', trigger: 'change' }]
+        kpi: [{ required: true, trigger: 'change', validator: validKPI }]
       },
       columns: [
         {
@@ -245,23 +270,62 @@ export default {
       }
     },
     handleGetDepList () {
-      getDepList().then(
+      getOrganizationTree().then(
         res => {
-          this.depList = res.data.results;
+          this.depList = res.data
         }
       )
     },
     handleGetKPIList () {
-      getKPIList().then(
+      // getKPIList().then(
+      //   res => {
+      //     let kpiList = res.data.results;
+      //     this.kpiFormat(kpiList)
+      //   }
+      // )
+    },
+    filterMethod (data, query) {
+      return data.label.indexOf(query) > -1
+    },
+    handleGetDep (val) {
+      const params = { 'dep': val.label };
+      getGroupKPIUnused(val.id, params).then(
         res => {
-          let kpiList = res.data.results;
+          let kpiList = res.data;
           this.kpiFormat(kpiList)
         }
       )
     },
-    filterMethod (data, query) {
-      return data.label.indexOf(query) > -1
-    }
+    cancel () {
+      this.$Message.info({ background: true, content: '取消操作', duration: 3, closable: true });
+      this.groupKPIModal = false;
+      this.$refs['groupKPIForm'].resetFields()
+    },
+    handleCreateChange (newTargetKeys) {
+      this.targetKeys = newTargetKeys
+    },
+    handleCreateDepKpi (name) {
+      let data = this.groupKPIForm;
+      for (let value of this.targetKeys.values()) {
+        data.kpi = value
+      }
+      this.$refs['groupKPIForm'].validate((valid) => {
+        if (valid) {
+          createGroupKPI(data).then(
+            res => {
+              this.$Message.success({ background: true, content: '指标新建成功', duration: 3, closable: true });
+              this.groupKPIModal = false;
+              this.$refs['groupKPIForm'].resetFields();
+              this.targetKeys = [];
+              this.handleGetKPIGroupList()
+            }
+          )
+        } else {
+          this.$Message.error({ background: true, content: '请检查数据是否都已经录入!', duration: 3, closable: true })
+        }
+      })
+    },
+    handleUpdateDepKpi () {}
   },
   created () {
     this.handleGetKPIGroupList();
@@ -271,6 +335,24 @@ export default {
   computed: {
     curPage () {
       return Math.ceil(this.total / this.getParams.page_size)
+    },
+    submitDisabled () {
+      let disabled = false;
+      if (this.targetKeys.length === 1) disabled = true;
+      return disabled
+    }
+  },
+  watch: {
+    targetKeys () {
+      if (this.targetKeys.length === 1) {
+        this.kpiList.map((item) => {
+          if (this.targetKeys[0] !== item.key) { item['disabled'] = true }
+        });
+      } else {
+        this.kpiList.map((item) => {
+          if (this.targetKeys[0] !== item.key) { item['disabled'] = false }
+        });
+      }
     }
   }
 }
