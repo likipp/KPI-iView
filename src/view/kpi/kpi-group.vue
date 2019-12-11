@@ -98,8 +98,7 @@ import {
   getGroupKPIUnused,
   createGroupKPI,
   deleteGroupKPI,
-  updateGroupKPI,
-  getGroupKPIEnabled
+  updateGroupKPI
 } from '../../api/kpi/kpigroup';
 // import { getDepList } from '../../api/personnel/department';
 import { getOrganizationTree } from '../../api/personnel/organizationtree';
@@ -259,21 +258,40 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.type = 'edit';
-                    // const value = { 'id': params.row.dep.id, 'label': params.row.dep.name };
-                    // this.handleGetDep(value)
-                    // this.kpiList = this.allKPIList;
-                    this.groupKPIModal = true;
-                    this.groupKPIForm.dep = params.row.dep.id;
-                    this.groupKPIForm.status = params.row.status.id;
-                    this.groupKPIForm.l_limit = params.row.l_limit;
-                    this.groupKPIForm.u_limit = params.row.u_limit;
-                    this.groupKPIForm.t_value = params.row.t_value;
-                    this.groupKPIForm.id = params.row.id;
-                    let kpi_selected = params.row.kpi;
-                    let kpi_copy = [];
-                    kpi_copy[0] = kpi_selected.id;
-                    this.targetKeys = kpi_copy
+                    const value = { 'id': params.row.dep.id, 'dep': params.row.dep.name };
+                    getGroupKPIUnused(value.id, value).then(
+                      res => {
+                        let kpiList = res.data;
+                        this.kpiFormat(kpiList);
+                        // console.log(this.kpiList, 66666)
+                        this.type = 'edit';
+                        this.groupKPIModal = true;
+                        this.groupKPIForm.dep = params.row.dep.id;
+                        this.groupKPIForm.status = params.row.status.id;
+                        this.groupKPIForm.l_limit = params.row.l_limit;
+                        this.groupKPIForm.u_limit = params.row.u_limit;
+                        this.groupKPIForm.t_value = params.row.t_value;
+                        this.groupKPIForm.id = params.row.id;
+                        let kpi = params.row.kpi;
+                        let kpi_selected = { 'id': params.row.kpi.id - 1, 'key': params.row.kpi.id, 'label': params.row.kpi.name };
+                        this.kpiList.push(kpi_selected);
+                        let kpi_copy = [];
+                        kpi_copy[0] = kpi.id;
+                        this.targetKeys = kpi_copy;
+                      }
+                    ).catch(error => {
+                      console.log(error)
+                    })
+                    // this.type = 'edit';
+                    // this.groupKPIModal = true;
+
+                  //   if (this.kpiList.length !== 0) {
+                  //     console.log(this.kpiList, 77777)
+                  //
+                  //     console.log(this.targetKeys)
+                  //   } else {
+                  //     console.log(this.targetKeys, 9876)
+                  //   }
                   }
                 },
                 style: {
@@ -381,6 +399,7 @@ export default {
       this.$Message.info({ background: true, content: '取消操作', duration: 3, closable: true });
       this.groupKPIModal = false;
       this.type = 'create';
+      this.targetKeys = [];
       this.$refs['groupKPIForm'].resetFields()
     },
     handleCreateChange (newTargetKeys) {
@@ -399,6 +418,7 @@ export default {
               this.groupKPIModal = false;
               this.$refs['groupKPIForm'].resetFields();
               this.targetKeys = [];
+              this.kpiList = [];
               this.handleGetKPIGroupList()
             }
           )
@@ -416,7 +436,9 @@ export default {
         res => {
           this.$Message.success({ background: true, content: '修改成功', duration: 3, closable: true });
           this.groupKPIModal = false;
+          this.type = 'create';
           this.$refs['groupKPIForm'].resetFields();
+          this.kpiList = [];
           this.targetKeys = [];
           this.handleGetKPIGroupList()
         }
@@ -431,22 +453,21 @@ export default {
           this.handleGetKPIGroupList()
         }
       )
-    },
-    handleGetAllKPIList () {
-      getGroupKPIEnabled().then(
-        res => {
-          // let kpiList = res.data.results;
-          // this.kpiFormat(kpiList)
-          console.log(res, 6666)
-        }
-      )
     }
+    // handleGetAllKPIList () {
+    //   getGroupKPIEnabled().then(
+    //     res => {
+    //       let kpiList = res.data;
+    //       this.kpiFormat(kpiList)
+    //     }
+    //   )
+    // }
   },
   created () {
     this.handleGetKPIGroupList();
     this.handleGetDepList();
     this.handleGetKPIList();
-    this.handleGetAllKPIList()
+    // this.handleGetAllKPIList()
   },
   computed: {
     curPage () {
