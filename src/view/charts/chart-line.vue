@@ -32,7 +32,7 @@
         </div>
       </Card>
     </Row>
-    <Card>
+    <Card v-if="kpiList.length">
       <div id="mountNode">
       </div>
     </Card>
@@ -457,7 +457,6 @@ export default {
             } else {
               row.key = '实际值'
             }
-            console.log(row, 456789)
             return row
           }
         });
@@ -486,44 +485,6 @@ export default {
         chart.legend({
           attachLast: true
         });
-        // chart.guide().line({
-        //   start: ['min', dv.origin[0].l_limit],
-        //   end: ['max', dv.origin[0].l_limit],
-        //   lineStyle: {
-        //     stroke: '#ed4014',
-        //     lineWidth: 1,
-        //     lineDash: [3, 3]
-        //   },
-        //   text: {
-        //     position: 'start',
-        //     style: {
-        //       fill: '#8c8c8c',
-        //       fontSize: 15,
-        //       fontWeight: 'normal'
-        //     },
-        //     content: '下限值' + dv.origin[0].l_limit,
-        //     offsetY: -5
-        //   }
-        // });
-        // chart.guide().line({
-        //   start: ['min', dv.origin[0].t_value],
-        //   end: ['max', dv.origin[0].t_value],
-        //   lineStyle: {
-        //     stroke: '#19be6b',
-        //     lineWidth: 1,
-        //     lineDash: [3, 3]
-        //   },
-        //   text: {
-        //     position: 'start',
-        //     style: {
-        //       fill: '#8c8c8c',
-        //       fontSize: 15,
-        //       fontWeight: 'normal'
-        //     },
-        //     content: '上限值' + dv.origin[0].t_value,
-        //     offsetY: -5
-        //   }
-        // });
         chart.line().position('month*value').color('kpi').shape('smooth');
         chart.point().position('month*value').size(4).shape('circle').style({
           stroke: '#fff',
@@ -596,7 +557,7 @@ export default {
         }
       }
       this.form.search = this.dep + ' ' + this.name;
-      this.handleGetInputList()
+      this.handleGetInputList();
       this.handelPostGroupKpi()
     }
   },
