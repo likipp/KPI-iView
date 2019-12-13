@@ -1,5 +1,13 @@
 <template>
   <div>
+    <Row>
+      <Col span="6">
+        <Alert show-icon>
+          操作提示
+          <template slot="desc">选择部门后,显示相关数据信息 </template>
+        </Alert>
+      </Col>
+    </Row>
     <Row style="padding: 15px 0">
       <Form inline :label-width="90">
         <Col span="5">
@@ -29,6 +37,13 @@
           </Row>
         </div>
       </Card>
+      <Row>
+        <Col span="6">
+          <Alert show-icon type="error" v-if="this.inputList.length === 0 && this.form.dep">
+            <template slot="desc">未录入KPI数据</template>
+          </Alert>
+        </Col>
+      </Row>
     </Row>
     <Row>
       <Card v-if="reFresh">
@@ -212,6 +227,11 @@ export default {
           this.handelPostGroupKpi();
           this.handleGetInputList();
         } else {
+          this.$Notice.error({
+            title: '系统提示',
+            desc: '未录入KPI数据,请先输入!',
+            duration: 3
+          });
           this.inputList = [];
           this.reFresh = false;
           break;

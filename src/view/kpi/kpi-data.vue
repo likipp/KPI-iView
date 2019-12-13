@@ -267,8 +267,10 @@ export default {
       let arr = this.groupKpiList
       for (let i = 0; i < arr.length; i++) {
         if (val.id === arr[i].dep.id) {
-          this.depName.search = arr[i].dep.name
-          this.kpiList.push(arr[i])
+          this.depName.search = arr[i].dep.name;
+          if (arr[i].status.id === 'using') {
+            this.kpiList.push(arr[i])
+          }
         }
       }
       this.handleGetInputList()
