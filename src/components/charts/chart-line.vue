@@ -41,7 +41,6 @@ export default {
       const dv = ds.createView().source(data);
       const chart = new G2.Chart({
         container: 'mountNode',
-        // width: 700,
         height: window.innerHeight,
         forceFit: true,
         padding: [20, 30, 30, 50]
@@ -87,16 +86,6 @@ export default {
             formatter: function formatter (val) {
               return val + '%'
             }
-          }
-        });
-        chart.legend('value', {
-          position: 'top-center',
-          marker: 'square',
-          // offsetY: 10,
-          textStyle: {
-            fill: '#404040', // 文本的颜色
-            fontSize: '12', // 文本大小
-            fontWeight: 'bold'
           }
         });
         // 设置超过预警线之后变色
@@ -181,6 +170,16 @@ export default {
             formatter: function formatter (val) {
               return val + '%'
             }
+          }
+        });
+        chart.legend('kpi', {
+          position: 'top-center',
+          marker: 'square',
+          offsetY: 8,
+          textStyle: {
+            fill: '#404040', // 文本的颜色
+            fontSize: '12', // 文本大小
+            fontWeight: 'bold'
           }
         });
         chart.line().position('month*value').color('kpi').shape('smooth');
