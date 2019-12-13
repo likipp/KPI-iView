@@ -5,16 +5,17 @@
         <Col span="5">
           <FormItem label="请选择部门: ">
             <TreeSelect v-model="form.dep" :options="depList" :disable-branch-nodes="true" @select="change"
-                        :show-count="true" placeholder="请选择部门"></TreeSelect>
+                        @input="handleInput" :show-count="true" placeholder="请选择部门"></TreeSelect>
           </FormItem>
         </Col>
         <FormItem label="请选择指标: ">
-          <Select v-model="form.kpi" style="width: 200px" clearable @on-change="kpiChange">
+          <Select ref="kpiSelect" v-model="form.kpi" style="width: 200px" :disabled="!forms.name" clearable
+                  @on-change="kpiChange" @on-clear="handleClear">
             <Option v-for="kpi in kpiList" :key="kpi.kpi.id" :value="kpi.kpi.id">{{ kpi.kpi.name }}</Option>
           </Select>
         </FormItem>
       </Form>
-      <Card>
+      <Card v-if="inputList.length !== 0">
         <div style="text-align: center; padding: 15px">
           <Row style="padding-bottom: 10px; float: left">
             <Tag color="success">达到目标</Tag>
@@ -142,78 +143,95 @@ export default {
       let data = this.form;
       selectData(data).then(
         res => {
-          let result = Object.entries(Object.entries(res.data)[0][1]).map(([key, value]) => {
-            return { value: value, kpi: key }
-          });
-          this.monthList = [];
-          const date = new Date();
-          for (let i = 12; i > 0; i--) {
-            if (i < 10) {
-              this.monthList.push((date.getFullYear() + '').substr(2, 3) + '/' + 0 + i)
-            } else {
-              this.monthList.push((date.getFullYear() + '').substr(2, 3) + '/' + i)
+          if (res.status !== 251) {
+            let result = Object.entries(Object.entries(res.data)[0][1]).map(([key, value]) => {
+              return { value: value, kpi: key }
+            });
+            this.monthList = [];
+            const date = new Date();
+            for (let i = 12; i > 0; i--) {
+              if (i < 10) {
+                this.monthList.push((date.getFullYear() + '').substr(2, 3) + '/' + 0 + i)
+              } else {
+                this.monthList.push((date.getFullYear() + '').substr(2, 3) + '/' + i)
+              }
             }
-          }
-          for (let i = 0; i < this.monthList.length; i++) {
-            this.columns.splice(4, 0, {
-              title: this.monthList[i],
-              key: this.monthList[i],
-              align: 'center',
-              render: (h, params) => {
-                let r_values = Object.entries(Object.entries(params.row.value.r_value));
-                let t_value = Object.entries((Object.entries(params.row.value)))[0][1][1];
-                let l_limit = Object.entries((Object.entries(params.row.value)))[1][1][1];
-                for (const r_value of r_values) {
-                  if (r_value[1][0].substr(2, 5) === this.monthList[i]) {
-                    if (r_value[1][1] >= t_value) {
-                      return h('Tag', {
-                        props: { color: '#19be6b' }
-                      }, r_value[1][1])
-                    } else if (r_value[1][1] < l_limit) {
-                      return h('Tag', {
-                        props: { color: '#ed4014' }
-                      }, r_value[1][1])
-                    } else {
-                      return h('Tag', {
-                        props: { color: '#ff9900' }
-                      }, r_value[1][1])
+            for (let i = 0; i < this.monthList.length; i++) {
+              this.columns.splice(4, 0, {
+                title: this.monthList[i],
+                key: this.monthList[i],
+                align: 'center',
+                render: (h, params) => {
+                  let r_values = Object.entries(Object.entries(params.row.value.r_value));
+                  let t_value = Object.entries((Object.entries(params.row.value)))[0][1][1];
+                  let l_limit = Object.entries((Object.entries(params.row.value)))[1][1][1];
+                  for (const r_value of r_values) {
+                    if (r_value[1][0].substr(2, 5) === this.monthList[i]) {
+                      if (r_value[1][1] >= t_value) {
+                        return h('Tag', {
+                          props: { color: '#19be6b' }
+                        }, r_value[1][1])
+                      } else if (r_value[1][1] < l_limit) {
+                        return h('Tag', {
+                          props: { color: '#ed4014' }
+                        }, r_value[1][1])
+                      } else {
+                        return h('Tag', {
+                          props: { color: '#ff9900' }
+                        }, r_value[1][1])
+                      }
                     }
                   }
+                  return h('Tag', 'NA')
                 }
-                return h('Tag', 'NA')
-              }
-            })
+              })
+            }
+            this.inputList = result
+            this.columns.splice(16)
+          } else {
+            this.inputList = []
           }
-          this.inputList = result
-          this.columns.splice(16)
         }
       )
     },
+    handleInput (val) {
+      if (val === undefined) {
+        this.$refs['kpiSelect'].clearSingleSelect();
+        this.inputList = [];
+        this.reFresh = false;
+      }
+    },
     change (val) {
       this.kpiList = [];
+      this.$refs['kpiSelect'].clearSingleSelect();
       let arr = this.groupKpiList;
       for (let i = 0; i < arr.length; i++) {
         if (val.id === arr[i].dep.id) {
           this.kpiList.push(arr[i]);
-          this.forms.name = arr[i].dep.name
+          this.forms.name = arr[i].dep.name;
+          this.handelPostGroupKpi();
+          this.handleGetInputList();
+        } else {
+          this.inputList = [];
+          this.reFresh = false;
+          break;
         }
       }
-      this.handelPostGroupKpi();
-      this.handleGetInputList();
-      // this.reFresh = false
-      // this.$nextTick(() => {
-      //   this.reFresh = true
-      // })
     },
     kpiChange (val) {
-      for (let i = 0; i < this.kpiList.length; i++) {
-        if (this.kpiList[i].kpi.id === val) {
-          this.forms.kpi = this.kpiList[i].kpi.name
+      console.log(val, 666)
+      if (val) {
+        for (let i = 0; i < this.kpiList.length; i++) {
+          if (this.kpiList[i].kpi.id === val) {
+            this.forms.kpi = this.kpiList[i].kpi.name
+          }
         }
+        this.handelPostGroupKpi();
+        this.handleGetInputList();
       }
-      // this.form.kpi = val;
-      this.handelPostGroupKpi();
-      this.handleGetInputList();
+    },
+    handleClear () {
+      this.forms.kpi = ''
     }
     // 动态更改单元格样式, 没测试成功, 查看资料需要在data中先设置cellClassName, 但是render回来的数据不知道怎么操作。。
     // test (params) {
@@ -233,5 +251,11 @@ export default {
   .err {
     background-color: #ff9900;
     color: #fff
+  }
+  .vue-treeselect__control {
+    height: 30px;
+  }
+  .vue-treeselect--single .vue-treeselect__input-container {
+    height: 30px;
   }
 </style>

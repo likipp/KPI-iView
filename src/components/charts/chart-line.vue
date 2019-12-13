@@ -33,6 +33,9 @@ export default {
       )
     },
     drawChart () {
+      for (let i = 0; i < this.List.length; i++) {
+        this.List[i].month = this.List[i].month.substr(0, 7)
+      }
       const data = this.List;
       const ds = new DataSet();
       const dv = ds.createView().source(data);
@@ -43,101 +46,13 @@ export default {
         forceFit: true,
         padding: [20, 30, 30, 50]
       });
-      if (this.kpiList.length === 1) {
+      if (this.form.search.indexOf(' ') !== -1) {
         dv.transform({
           type: 'fold',
           fields: ['kpi'],
           key: 'key',
           value: 'value',
           retains: ['month', 'r_value']
-        });
-        // dv.transform({
-        //   type: 'map',
-        //   callback (row) {
-        //     if (row.key === 't_value') {
-        //       row.key = '目标值'
-        //     } else if (row.key === 'l_limit') {
-        //       row.key = '下限值'
-        //     } else {
-        //       row.key = '实际值'
-        //     }
-        //     return row
-        //   }
-        // })
-        chart.source(dv, {
-          month: {
-            type: 'timeCat',
-            range: [0, 1],
-            // 设置X轴时间格式为年/月: 19/01
-            mask: 'YY/MM'
-          },
-          // 设置图像的vlaue轴的起点最小值跟终点最大值
-          r_value: {
-            min: 0,
-            max: 100
-          }
-        });
-        // chart.axis('value', {
-        //   label: {
-        //     formatter: function formatter (val) {
-        //       return val + '%'
-        //     }
-        //   }
-        // })
-        // chart.legend({
-        //   attachLast: true
-        // })
-        // chart.guide().line({
-        //   start: ['min', dv.origin[0].l_limit],
-        //   end: ['max', dv.origin[0].l_limit],
-        //   lineStyle: {
-        //     stroke: '#ed4014',
-        //     lineWidth: 1,
-        //     lineDash: [3, 3]
-        //   }
-        // text: {
-        //   position: 'start',
-        //   style: {
-        //     fill: '#8c8c8c',
-        //     fontSize: 15,
-        //     fontWeight: 'normal'
-        //   },
-        //   content: '下限值' + dv.origin[0].l_limit,
-        //   offsetY: -5
-        // }
-        // })
-        // chart.guide().line({
-        //   start: ['min', dv.origin[0].t_value],
-        //   end: ['max', dv.origin[0].t_value],
-        //   lineStyle: {
-        //     stroke: '#19be6b',
-        //     lineWidth: 1,
-        //     lineDash: [3, 3]
-        //   }
-        //   // text: {
-        //   //   position: 'start',
-        //   //   style: {
-        //   //     fill: '#8c8c8c',
-        //   //     fontSize: 15,
-        //   //     fontWeight: 'normal'
-        //   //   },
-        //   //   content: '上限值' + dv.origin[0].t_value,
-        //   //   offsetY: -5
-        //   // }
-        // })
-        chart.line().position('month*r_value').color('value').shape('smooth')
-        chart.point().position('month*r_value').size(4).shape('circle').style({
-          stroke: '#fff',
-          lineWidth: 1
-        });
-        chart.render()
-      } else {
-        dv.transform({
-          type: 'fold',
-          fields: ['r_value'],
-          key: 'key',
-          value: 'value',
-          retains: ['month', 'kpi']
         });
         dv.transform({
           type: 'map',
@@ -156,7 +71,100 @@ export default {
           month: {
             type: 'timeCat',
             range: [0, 1],
+            // 设置X轴时间格式为年/月: 19/01
             mask: 'YY/MM'
+          },
+          // 设置图像的value轴的起点最小值跟终点最大值
+          r_value: {
+            min: 0,
+            max: 100,
+            // 设置数据圆点的别名
+            alias: dv.origin[0].kpi
+          }
+        });
+        chart.axis('value', {
+          label: {
+            formatter: function formatter (val) {
+              return val + '%'
+            }
+          }
+        });
+        chart.legend('value', {
+          position: 'top-center',
+          marker: 'square',
+          // offsetY: 10,
+          textStyle: {
+            fill: '#404040', // 文本的颜色
+            fontSize: '12', // 文本大小
+            fontWeight: 'bold'
+          }
+        });
+        // 设置超过预警线之后变色
+        chart.guide().regionFilter({
+          top: true,
+          start: ['min', dv.origin[0].l_limit],
+          end: ['max', 0],
+          color: '#F5222D',
+          apply: ['line']
+        });
+        chart.guide().line({
+          start: ['min', dv.origin[0].l_limit],
+          end: ['max', dv.origin[0].l_limit],
+          lineStyle: {
+            stroke: '#ed4014',
+            lineWidth: 1,
+            lineDash: [3, 3]
+          },
+          text: {
+            position: 'start',
+            style: {
+              fill: '#8c8c8c',
+              fontSize: 15,
+              fontWeight: 'normal'
+            },
+            content: '下限值' + dv.origin[0].l_limit,
+            offsetY: -5
+          }
+        });
+        chart.guide().line({
+          start: ['min', dv.origin[0].t_value],
+          end: ['max', dv.origin[0].t_value],
+          lineStyle: {
+            stroke: '#19be6b',
+            lineWidth: 1,
+            lineDash: [3, 3]
+          },
+          text: {
+            position: 'start',
+            style: {
+              fill: '#8c8c8c',
+              fontSize: 15,
+              fontWeight: 'normal'
+            },
+            content: '上限值' + dv.origin[0].t_value,
+            offsetY: -5
+          }
+        });
+        chart.line().position('month*r_value').color('#436EEE').shape('smooth');
+        chart.point().position('month*r_value').size(4).shape('circle').style({
+          stroke: '#fff',
+          lineWidth: 1
+        });
+        chart.render()
+      } else {
+        dv.transform({
+          type: 'fold',
+          fields: ['r_value'],
+          key: 'key',
+          value: 'value',
+          retains: ['month', 'kpi']
+        });
+        chart.source(dv, {
+          month: {
+            type: 'timeCat',
+            range: [0, 1],
+            mask: 'YY/MM',
+            alias: '月份'
           },
           // 设置图像的vlaue轴的起点最小值跟终点最大值
           // value: {
@@ -175,17 +183,8 @@ export default {
             }
           }
         });
-        chart.legend({
-          attachLast: true
-        });
-        chart.guide().regionFilter({
-          top: true,
-          start: ['min', dv.origin[0].l_limit],
-          end: ['max', 0],
-          color: '#ff4d4f'
-        });
         chart.line().position('month*value').color('kpi').shape('smooth');
-        chart.point().position('month*value').size(4).shape('circle').style({
+        chart.point().position('month*value').size(4).shape('circle').color('kpi').style({
           stroke: '#fff',
           lineWidth: 1
         });
