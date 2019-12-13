@@ -219,7 +219,6 @@ export default {
       }
     },
     kpiChange (val) {
-      console.log(val, 666)
       if (val) {
         for (let i = 0; i < this.kpiList.length; i++) {
           if (this.kpiList[i].kpi.id === val) {
